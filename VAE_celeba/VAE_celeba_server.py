@@ -49,7 +49,6 @@ def load_batch(batch_idx, istrain):
     else:
         template = '/home/peterli/simons/VAE_celeba/cropped/test/%s.jpg' 
         l = [str(batch_idx*64 + i + 10000).zfill(6) for i in range(64)]  
-    print(l)
     data = []
     for idx in l:
         img = Image.open(template%idx)
@@ -119,7 +118,7 @@ class VAE(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def encode(self, x):
-        print("encode")
+        #print("encode")
         h1 = self.leakyrelu(self.bn1(self.e1(x)))
         h2 = self.leakyrelu(self.bn2(self.e2(h1)))
         h3 = self.leakyrelu(self.bn3(self.e3(h2)))
@@ -139,7 +138,7 @@ class VAE(nn.Module):
         return eps.mul(std).add_(mu)
 
     def decode(self, z):
-        print("decode")
+        #print("decode")
         h1 = self.relu(self.d1(z))
         h1 = h1.view(-1, self.ngf*8*2, 4, 4)
         h2 = self.leakyrelu(self.bn6(self.d2(self.pd1(self.up1(h1)))))
@@ -156,7 +155,7 @@ class VAE(nn.Module):
         return z
 
     def forward(self, x):
-        print("FORWARD")
+        #print("FORWARD")
         mu, logvar = self.encode(x.view(-1, self.nc, self.ndf, self.ngf))
         z = self.reparametrize(mu, logvar)
         res = self.decode(z)
@@ -197,7 +196,6 @@ def train(epoch):
         loss.backward()
         train_loss += loss.data[0]
         optimizer.step()
-        print("after loss.backward has been called")
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), (len(train_loader)*64),
@@ -214,7 +212,7 @@ def test(epoch):
     test_loss = 0
     for batch_idx in test_loader:
         data = load_batch(batch_idx, False)
-        data = Variable(data, volatile=True)
+     #   data = Variable(data, volatile=True)
         if args.cuda:
             data = data.cuda()
         recon_batch, mu, logvar = model(data)
