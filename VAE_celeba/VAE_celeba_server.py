@@ -7,7 +7,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 import torchvision
 from torchvision import datasets, transforms
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 from glob import glob
 #from util import *
