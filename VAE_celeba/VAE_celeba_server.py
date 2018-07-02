@@ -38,7 +38,7 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
 
 #the ranges are the number of batches
 train_loader = range(153)  
-test_loader = range(3)  # about 1.9% of the train batches
+test_loader = range(2)  # 3 batches is 192 imgs, test folder only has 189
 
 totensor = transforms.ToTensor()
 def load_batch(batch_idx, istrain):
