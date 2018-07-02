@@ -167,17 +167,17 @@ model = VAE(nc=3, ngf=128, ndf=128, latent_variable_size=500)
 if args.cuda:
     model.cuda()
 
-reconstruction_function = nn.BCELoss()
+reconstruction_function = nn.MSELoss()
 reconstruction_function.size_average = False
 def loss_function(recon_x, x, mu, logvar):
-    BCE = reconstruction_function(recon_x, x)
+    MSE = reconstruction_function(recon_x, x)
 
     # https://arxiv.org/abs/1312.6114 (Appendix B)
     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
     KLD_element = mu.pow(2).add_(logvar.exp()).mul_(-1).add_(1).add_(logvar)
     KLD = torch.sum(KLD_element).mul_(-0.5)
 
-    return BCE + KLD
+    return MSE + KLD
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
@@ -285,10 +285,10 @@ def latent_space_transition(items): # input is list of tuples of  (a,b)
 
 
 def rand_faces(num=5):
-    load_last_model()
+    #load_last_model()
     model.eval()
     z = torch.randn(num*num, model.latent_variable_size)
-    z = Variable(z, volatile=True)
+    #z = Variable(z, volatile=True)
     if args.cuda:
         z = z.cuda()
     recon = model.decode(z)
