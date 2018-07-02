@@ -15,8 +15,8 @@ import numpy as np
 from PIL import Image
 
 parser = argparse.ArgumentParser(description='PyTorch VAE')
-parser.add_argument('--batch-size', type=int, default=128, metavar='N',
-                    help='input batch size for training (default: 128)')
+parser.add_argument('--batch-size', type=int, default=64, metavar='N',
+                    help='input batch size for training (default: 64)')
 parser.add_argument('--epochs', type=int, default=20, metavar='N',
                     help='number of epochs to train (default: 20)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
@@ -35,22 +35,25 @@ if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
 kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-train_loader = range(2080)
-test_loader = range(40)
+
+#the ranges are the number of batches
+train_loader = range(153)  
+test_loader = range(3)  # about 1.9% of the train batches
 
 totensor = transforms.ToTensor()
 def load_batch(batch_idx, istrain):
-    size = 128, 128, 3
+   # size = 128, 128, 3
     if istrain:
-        template = '/Users/peter/Desktop/VAE_celeba/data/train/%s.jpg'
+        template = '/Users/peter/Desktop/simonsgit/VAE_celeba/cropped/train/%s.jpg' 
+        l = [str(batch_idx*64 + i + 10190).zfill(6) for i in range(64)]  #first 190 img indices are test, the rest are train
     else:
-        template = '/Users/peter/Desktop/VAE_celeba/data/test/%s.jpg'
-    l = [str(batch_idx*128 + i).zfill(6) for i in range(128)]
+        template = '/Users/peter/Desktop/simonsgit/VAE_celeba/cropped/test/%s.jpg' 
+        l = [str(batch_idx*64 + i + 10000).zfill(6) for i in range(64)]  
     print(l)
     data = []
     for idx in l:
         img = Image.open(template%idx)
-        img.thumbnail(size) # resizes all images to 128 x 128 x 3
+   #     img.thumbnail(size) # resizes all images to 128 x 128 x 3
         data.append(np.array(img))
     data = [totensor(i) for i in data]
     return torch.stack(data, dim=0)
@@ -197,13 +200,13 @@ def train(epoch):
         print("after loss.backward has been called")
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), (len(train_loader)*128),
+                epoch, batch_idx * len(data), (len(train_loader)*64),
                 100. * batch_idx / len(train_loader),
                 loss.data[0] / len(data)))
 
     print('====> Epoch: {} Average loss: {:.4f}'.format(
-          epoch, train_loss / (len(train_loader)*128)))
-    return train_loss / (len(train_loader)*128)
+          epoch, train_loss / (len(train_loader)*64)))
+    return train_loss / (len(train_loader)*64)
 
 def test(epoch):
     print("test")
@@ -220,7 +223,7 @@ def test(epoch):
         torchvision.utils.save_image(data.data, '../imgs/Epoch_{}_data.jpg'.format(epoch), nrow=8, padding=2)
         torchvision.utils.save_image(recon_batch.data, '../imgs/Epoch_{}_recon.jpg'.format(epoch), nrow=8, padding=2)
 
-    test_loss /= (len(test_loader)*128)
+    test_loss /= (len(test_loader)*64)
     print('====> Test set loss: {:.4f}'.format(test_loss))
     return test_loss
 
