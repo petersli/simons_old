@@ -51,7 +51,7 @@ print(opt)
 opt.data_dir_prefix = '/nfs/bigdisk/zhshu/data/fare/'
 
 ## change the output directory to your own
-opt.output_dir_prefix = './'
+opt.output_dir_prefix = '/Users/Peter/Desktop/VAEtriplet'
 opt.dirCheckpoints    = opt.output_dir_prefix + '/checkpoints/ExpressionTripletTest'
 opt.dirImageoutput    = opt.output_dir_prefix + '/images/ExpressionTripletTest'
 opt.dirTestingoutput  = opt.output_dir_prefix + '/testing/ExpressionTripletTest'
@@ -74,7 +74,7 @@ except OSError:
     pass
 
 
-# sampe iamges
+# sample iamges
 def visualizeAsImages(img_list, output_dir, 
                       n_sample=4, id_sample=None, dim=-1, 
                       filename='myimage', nrow=2, 

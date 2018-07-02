@@ -42,25 +42,148 @@ test_loader = range(2)  # 3 batches is 192 imgs, test folder only has 189
 
 totensor = transforms.ToTensor()
 def load_batch(batch_idx, istrain):
-   # size = 128, 128, 3
     if istrain:
-        template = '/Users/peter/Desktop/simonsgit/VAE_celeba/cropped/train/%s.jpg' 
+        template = '/home/peterli/simons/VAE_celeba/cropped/train/%s.jpg' 
         l = [str(batch_idx*64 + i + 10190).zfill(6) for i in range(64)]  #first 190 img indices are test, the rest are train
     else:
-        template = '/Users/peter/Desktop/simonsgit/VAE_celeba/cropped/test/%s.jpg' 
+        template = '/home/peterli/simons/VAE_celeba/cropped/test/%s.jpg' 
         l = [str(batch_idx*64 + i + 10000).zfill(6) for i in range(64)]  
     data = []
     for idx in l:
         img = Image.open(template%idx)
-   #     img.thumbnail(size) # resizes all images to 128 x 128 x 3
         data.append(np.array(img))
     data = [totensor(i) for i in data]
     return torch.stack(data, dim=0)
 
 
-class VAE(nn.Module):
+## do not change the data directory
+opt.data_dir_prefix = '/nfs/bigdisk/zhshu/data/fare/'
+
+## change the output directory to your own
+opt.output_dir_prefix = '/Users/Peter/Desktop/VAEtriplet'
+opt.dirCheckpoints    = opt.output_dir_prefix + '/checkpoints/ExpressionTripletTest'
+opt.dirImageoutput    = opt.output_dir_prefix + '/images/ExpressionTripletTest'
+opt.dirTestingoutput  = opt.output_dir_prefix + '/testing/ExpressionTripletTest'
+
+opt.imgSize = 64
+
+try:
+    os.makedirs(opt.dirCheckpoints)
+except OSError:
+    pass
+try:
+    os.makedirs(opt.dirImageoutput)
+except OSError:
+    pass
+try:
+    os.makedirs(opt.dirTestingoutput)
+except OSError:
+    pass
+
+
+# sample iamges
+def visualizeAsImages(img_list, output_dir, 
+                      n_sample=4, id_sample=None, dim=-1, 
+                      filename='myimage', nrow=2, 
+                      normalize=False):
+    if id_sample is None:
+        images = img_list[0:n_sample,:,:,:]
+    else:
+        images = img_list[id_sample,:,:,:]
+    if dim >= 0:
+        images = images[:,dim,:,:].unsqueeze(1)
+    vutils.save_image(images, 
+        '%s/%s'% (output_dir, filename+'.png'),
+        nrow=nrow, normalize = normalize, padding=2)
+
+
+def parseSampledDataTripletMultipie(dp0_img,  dp9_img, dp1_img):
+    ###
+    dp0_img  = dp0_img.float()/255 # convert to float and rerange to [0,1]
+    dp0_img  = dp0_img.permute(0,3,1,2).contiguous()  # reshape to [batch_size, 3, img_H, img_W]
+    ###
+    dp9_img  = dp9_img.float()/255 # convert to float and rerange to [0,1]
+    dp9_img  = dp9_img.permute(0,3,1,2).contiguous()  # reshape to [batch_size, 3, img_H, img_W]
+    ###
+    dp1_img  = dp1_img.float()/255 # convert to float and rerange to [0,1]
+    dp1_img  = dp1_img.permute(0,3,1,2).contiguous()  # reshape to [batch_size, 3, img_H, img_W]
+    return dp0_img, dp9_img, dp1_img
+
+
+def setFloat(*args):
+    barg = []
+    for arg in args: 
+        barg.append(arg.float())
+    return barg
+
+def setCuda(*args):
+    barg = []
+    for arg in args: 
+        barg.append(arg.cuda())
+    return barg
+
+def setAsVariable(*args):
+    barg = []
+    for arg in args: 
+        barg.append(Variable(arg))
+    return barg    
+
+def setAsDumbVariable(*args):
+    barg = []
+    for arg in args: 
+        barg.append(Variable(arg,requires_grad=False))
+    return barg   
+
+
+
+# Training data folder list
+TrainingData = []
+#session 01
+
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_01_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_02_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_03_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_04_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_05_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_06_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_07_select/')
+
+#session 02
+'''
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_01_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_02_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_03_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_04_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_05_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_06_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_07_select/')
+
+#session 03
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_01_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_02_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_03_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_04_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_05_select/')
+
+#session 04
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_01_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_02_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_03_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_04_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_05_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_06_select/')
+TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_07_select/')
+
+'''
+# Testing
+TestingData = []
+TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_select_test/')
+
+
+
+class AE(nn.Module):
     def __init__(self, nc, ngf, ndf, latent_variable_size):
-        super(VAE, self).__init__()
+        super(AE, self).__init__()
 
         self.nc = nc # num channels
         self.ngf = ngf # num generator filters
@@ -84,7 +207,6 @@ class VAE(nn.Module):
         self.bn5 = nn.BatchNorm2d(ndf*8)
 
         self.fc1 = nn.Linear(ndf*8*4*4, latent_variable_size)
-        self.fc2 = nn.Linear(ndf*8*4*4, latent_variable_size)
 
         # decoder
         self.d1 = nn.Linear(latent_variable_size, ngf*8*2*4*4)
@@ -126,16 +248,7 @@ class VAE(nn.Module):
         h5 = self.leakyrelu(self.bn5(self.e5(h4)))
         h5 = h5.view(-1, self.ndf*8*4*4)
 
-        return self.fc1(h5), self.fc2(h5)
-
-    def reparametrize(self, mu, logvar):
-        std = logvar.mul(0.5).exp_()
-        if args.cuda:
-            eps = torch.cuda.FloatTensor(std.size()).normal_()
-        else:
-            eps = torch.FloatTensor(std.size()).normal_()
-        eps = Variable(eps)
-        return eps.mul(std).add_(mu)
+        return self.fc1(h5)
 
     def decode(self, z):
         #print("decode")
@@ -148,36 +261,34 @@ class VAE(nn.Module):
 
         return self.sigmoid(self.d6(self.pd5(self.up5(h5))))
 
-    def get_latent_var(self, x):
-        print("get latent var")
-        mu, logvar = self.encode(x.view(-1, self.nc, self.ndf, self.ngf))
-        z = self.reparametrize(mu, logvar)
-        return z
+    def get_latent_vectors(self, x):
+        z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # whole latent vector
+        z_per = z[0-63] # part of z repesenenting identity of the person
+        z_exp = z[64-127]  # part of z representing the expression
+        return z, z_per, z_exp
 
     def forward(self, x):
-        #print("FORWARD")
-        mu, logvar = self.encode(x.view(-1, self.nc, self.ndf, self.ngf))
-        z = self.reparametrize(mu, logvar)
-        res = self.decode(z)
-        return res, mu, logvar
+        z, z_per, z_exp = get_latent_vectors(self, x)
+        recon_x = self.decode(z)
+        return recon, z, z_per, z_exp
 
 
-model = VAE(nc=3, ngf=64, ndf=64, latent_variable_size=500)
+model = AE(nc=3, ngf=64, ndf=64, latent_variable_size=128)
 
 if args.cuda:
     model.cuda()
 
-reconstruction_function = nn.MSELoss()
-reconstruction_function.size_average = False
-def loss_function(recon_x, x, mu, logvar):
-    MSE = reconstruction_function(recon_x, x)
+def recon_loss_func(recon_x, x):
+    return nn.MSELoss(size_average=None, recon_x, x)
 
-    # https://arxiv.org/abs/1312.6114 (Appendix B)
-    # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-    KLD_element = mu.pow(2).add_(logvar.exp()).mul_(-1).add_(1).add_(logvar)
-    KLD = torch.sum(KLD_element).mul_(-0.5)
-
-    return MSE + KLD
+def siamese_loss_func(z1, z2, label):
+    y = torch.tensor([1])
+    y.requires_grad_(False)
+    if label == 1: # measure similarity
+        return nn.CosineEmbeddingLoss(z1, z2, y)
+    elif label == -1: # measure dissimilarity
+        y = torch.tensor([-1])
+        return nn.CosineEmbeddingLoss(z1, z2, y)
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
@@ -185,16 +296,39 @@ def train(epoch):
     print("train")
     model.train()
     train_loss = 0
-    for batch_idx in train_loader:
-        data = load_batch(batch_idx, True)
-     #   data = Variable(data)
+    dataroot = random.sample(TrainingData,1)[0]
+
+    dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
+    print('# size of the current (sub)dataset is %d' %len(dataset))
+    train_amount = train_amount + len(dataset)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
+    for batch_idx, data_point in enumerate(dataloader, 0):
+
+        gc.collect() # collect garbage
+        # sample the data points: 
+        # dp0_img: image of data point 0
+        # dp9_img: image of data point 9, which is different in ``expression'' compare to dp0
+        # dp1_img: image of data point 1, which is different in ``person'' compare to dp0
+        dp0_img, dp9_img, dp1_img = data_point
+        dp0_img, dp9_img, dp1_img = parseSampledDataTripletMultipie(dp0_img, dp9_img, dp1_img)
         if args.cuda:
-            data = data.cuda()
+            dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
+        dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
+
         optimizer.zero_grad()
-        recon_batch, mu, logvar = model(data)
-        loss = loss_function(recon_batch, data, mu, logvar)
-        loss.backward()
-        train_loss += loss.data[0]
+        z_dp9, z_per_dp9, z_exp_dp9 = get_latent_vectors(dp9_img)
+        z_dp1, z_per_dp1, z_exp_dp1 = get_latent_vectors(dp1_img)
+
+        recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
+        recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
+
+        #calc siamese loss here
+
+        optimizer.zero_grad()
+        recon_loss.backward()
+        recon_train_loss += recon_loss.data[0]
+
+
         optimizer.step()
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
@@ -204,7 +338,7 @@ def train(epoch):
 
     print('====> Epoch: {} Average loss: {:.4f}'.format(
           epoch, train_loss / (len(train_loader)*64)))
-    return train_loss / (len(train_loader)*64)
+    return recon_train_loss / (len(train_loader)*64)
 
 def test(epoch):
     print("test")
