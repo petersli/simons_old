@@ -140,7 +140,7 @@ class VAE(nn.Module):
     def decode(self, z):
         #print("decode")
         h1 = self.relu(self.d1(z))
-        h1 = h1.view(-1, self.ngf*8*2, 4, 4)
+        h1 = h1.view(-1, self.ngf*8*2, 2, 2)
         h2 = self.leakyrelu(self.bn6(self.d2(self.pd1(self.up1(h1)))))
         h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
         h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h3)))))
@@ -162,7 +162,7 @@ class VAE(nn.Module):
         return res, mu, logvar
 
 
-model = VAE(nc=3, ngf=128, ndf=128, latent_variable_size=500)
+model = VAE(nc=3, ngf=64, ndf=64, latent_variable_size=500)
 
 if args.cuda:
     model.cuda()

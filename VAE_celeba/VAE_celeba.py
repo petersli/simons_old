@@ -7,7 +7,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 import torchvision
 from torchvision import datasets, transforms
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 from glob import glob
 #from util import *
@@ -38,7 +38,7 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
 
 #the ranges are the number of batches
 train_loader = range(153)  
-test_loader = range(3)  # about 1.9% of the train batches
+test_loader = range(2)  # 3 batches is 192 imgs, test folder only has 189
 
 totensor = transforms.ToTensor()
 def load_batch(batch_idx, istrain):
@@ -49,7 +49,6 @@ def load_batch(batch_idx, istrain):
     else:
         template = '/Users/peter/Desktop/simonsgit/VAE_celeba/cropped/test/%s.jpg' 
         l = [str(batch_idx*64 + i + 10000).zfill(6) for i in range(64)]  
-    print(l)
     data = []
     for idx in l:
         img = Image.open(template%idx)
@@ -119,7 +118,7 @@ class VAE(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def encode(self, x):
-        print("encode")
+        #print("encode")
         h1 = self.leakyrelu(self.bn1(self.e1(x)))
         h2 = self.leakyrelu(self.bn2(self.e2(h1)))
         h3 = self.leakyrelu(self.bn3(self.e3(h2)))
@@ -139,9 +138,9 @@ class VAE(nn.Module):
         return eps.mul(std).add_(mu)
 
     def decode(self, z):
-        print("decode")
+        #print("decode")
         h1 = self.relu(self.d1(z))
-        h1 = h1.view(-1, self.ngf*8*2, 4, 4)
+        h1 = h1.view(-1, self.ngf*8*2, 2, 2)
         h2 = self.leakyrelu(self.bn6(self.d2(self.pd1(self.up1(h1)))))
         h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
         h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h3)))))
@@ -156,29 +155,29 @@ class VAE(nn.Module):
         return z
 
     def forward(self, x):
-        print("FORWARD")
+        #print("FORWARD")
         mu, logvar = self.encode(x.view(-1, self.nc, self.ndf, self.ngf))
         z = self.reparametrize(mu, logvar)
         res = self.decode(z)
         return res, mu, logvar
 
 
-model = VAE(nc=3, ngf=128, ndf=128, latent_variable_size=500)
+model = VAE(nc=3, ngf=64, ndf=64, latent_variable_size=500)
 
 if args.cuda:
     model.cuda()
 
-reconstruction_function = nn.BCELoss()
+reconstruction_function = nn.MSELoss()
 reconstruction_function.size_average = False
 def loss_function(recon_x, x, mu, logvar):
-    BCE = reconstruction_function(recon_x, x)
+    MSE = reconstruction_function(recon_x, x)
 
     # https://arxiv.org/abs/1312.6114 (Appendix B)
     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
     KLD_element = mu.pow(2).add_(logvar.exp()).mul_(-1).add_(1).add_(logvar)
     KLD = torch.sum(KLD_element).mul_(-0.5)
 
-    return BCE + KLD
+    return MSE + KLD
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
@@ -197,7 +196,6 @@ def train(epoch):
         loss.backward()
         train_loss += loss.data[0]
         optimizer.step()
-        print("after loss.backward has been called")
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), (len(train_loader)*64),
@@ -214,7 +212,7 @@ def test(epoch):
     test_loss = 0
     for batch_idx in test_loader:
         data = load_batch(batch_idx, False)
-        data = Variable(data, volatile=True)
+     #   data = Variable(data, volatile=True)
         if args.cuda:
             data = data.cuda()
         recon_batch, mu, logvar = model(data)
@@ -287,10 +285,10 @@ def latent_space_transition(items): # input is list of tuples of  (a,b)
 
 
 def rand_faces(num=5):
-    load_last_model()
+    #load_last_model()
     model.eval()
     z = torch.randn(num*num, model.latent_variable_size)
-    z = Variable(z, volatile=True)
+    #z = Variable(z, volatile=True)
     if args.cuda:
         z = z.cuda()
     recon = model.decode(z)
