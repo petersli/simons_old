@@ -336,8 +336,8 @@ def train(epoch):
         dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
         optimizer.zero_grad()
-        z_dp9, z_per_dp9, z_exp_dp9 = get_latent_vectors(dp9_img)
-        z_dp1, z_per_dp1, z_exp_dp1 = get_latent_vectors(dp1_img)
+        z_dp9, z_per_dp9, z_exp_dp9 = self.get_latent_vectors(dp9_img)
+        z_dp1, z_per_dp1, z_exp_dp1 = self.get_latent_vectors(dp1_img)
 
         recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
         recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
@@ -404,8 +404,8 @@ def test(epoch):
             dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
         dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
-        z_dp9, z_per_dp9, z_exp_dp9 = get_latent_vectors(dp9_img)
-        z_dp1, z_per_dp1, z_exp_dp1 = get_latent_vectors(dp1_img)
+        z_dp9, z_per_dp9, z_exp_dp9 = self.get_latent_vectors(dp9_img)
+        z_dp1, z_per_dp1, z_exp_dp1 = self.get_latent_vectors(dp1_img)
 
         recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
         recon_test_loss += recon_loss_func(recon_batch_dp0, dp0_img).data[0]
