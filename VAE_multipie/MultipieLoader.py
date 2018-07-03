@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 import os
 import os.path
-import scipy.io
+#import scipy.io
 import random
 
 
