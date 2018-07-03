@@ -320,7 +320,7 @@ def train(epoch):
 
     dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
     print('# size of the current (sub)dataset is %d' %len(dataset))
-    train_amount = train_amount + len(dataset)
+ #   train_amount = train_amount + len(dataset)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
     for batch_idx, data_point in enumerate(dataloader, 0):
 
@@ -361,13 +361,13 @@ def train(epoch):
 
         optimizer.step()
         if batch_idx % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}'.format(
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}\tSiameseLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), (len(train_loader)*64),
                 100. * batch_idx / len(train_loader),
-                recon_loss.data[0] / len(data)))
+                recon_loss.data[0] / len(data_loader), siamese_loss.data[0] / len(data_loader)))
 
-    print('====> Epoch: {} Average recon loss: {:.4f}'.format(
-          epoch, recon_train_loss / (len(data_loader)*64)))
+    print('====> Epoch: {} Average recon loss: {:.4f}\tAverage siamese loss: {:.4f}'.format(
+          epoch, recon_train_loss / (len(data_loader)*64), recon_train_loss / (len(data_loader)*64)))
 
     print(dp0_img.size())
     print(dp9_img.size())
@@ -394,7 +394,7 @@ def test(epoch):
 
     dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
     print('# size of the current (sub)dataset is %d' %len(dataset))
-    train_amount = train_amount + len(dataset)
+   # train_amount = train_amount + len(dataset)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
     for batch_idx, data_point in enumerate(dataloader, 0):
         gc.collect() # collect garbage
@@ -434,7 +434,7 @@ def test(epoch):
 
     recon_test_loss /= (len(dataloader)*64)
     siamese_test_loss /= (len(dataloader)*64)
-    print('====> Test set recon loss: {:.4f}'.format(recon_test_loss))
+    print('====> Test set recon loss: {:.4f} \tsiamese loss: {:.4f}'.format(recon_test_loss, siamese_test_loss))
     return recon_test_loss, siamese_test_loss
 
 
