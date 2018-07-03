@@ -28,52 +28,47 @@ import math
 import MultipieLoader
 import gc
 
-# parser = argparse.ArgumentParser(description='PyTorch VAE')
-# parser.add_argument('--batch-size', type=int, default=64, metavar='N',
-#                     help='input batch size for training (default: 64)')
-# parser.add_argument('--epochs', type=int, default=20, metavar='N',
-#                     help='number of epochs to train (default: 20)')
-# parser.add_argument('--no-cuda', action='store_true', default=False,
-#                     help='enables CUDA training')
-# parser.add_argument('--seed', type=int, default=1, metavar='S',
-#                     help='random seed (default: 1)')
-# parser.add_argument('--log-interval', type=int, default=1, metavar='N',
-#                     help='how many batches to wait before logging training status')
-# args = parser.parse_args()
-# # args = parser.parse_args(args=[])  --for ipynb
-# args.cuda = not args.no_cuda and torch.cuda.is_available()
+parser = argparse.ArgumentParser(description='PyTorch VAE')
+parser.add_argument('--batch-size', type=int, default=64, metavar='N',
+                    help='input batch size for training (default: 64)')
+parser.add_argument('--epochs', type=int, default=20, metavar='N',
+                    help='number of epochs to train (default: 20)')
+parser.add_argument('--no-cuda', action='store_true', default=False,
+                    help='enables CUDA training')
+parser.add_argument('--seed', type=int, default=1, metavar='S',
+                    help='random seed (default: 1)')
+parser.add_argument('--log-interval', type=int, default=1, metavar='N',
+                    help='how many batches to wait before logging training status')
 
+args = parser.parse_args()
+# args = parser.parse_args(args=[])  --for ipynb
+args.cuda = not args.no_cuda and torch.cuda.is_available()
 
+torch.manual_seed(args.seed)
+if args.cuda:
+    torch.cuda.manual_seed(args.seed)
 
-# torch.manual_seed(args.seed)
-# if args.cuda:
-#     torch.cuda.manual_seed(args.seed)
+kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
 
-# kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
+#the ranges are the number of batches
+train_loader = range(153)  
+test_loader = range(2)  # 3 batches is 192 imgs, test folder only has 189
 
+totensor = transforms.ToTensor()
+def load_batch(batch_idx, istrain):
+    if istrain:
+        template = '/home/peterli/simons/VAE_celeba/cropped/train/%s.jpg' 
+        l = [str(batch_idx*64 + i + 10190).zfill(6) for i in range(64)]  #first 190 img indices are test, the rest are train
+    else:
+        template = '/home/peterli/simons/VAE_celeba/cropped/test/%s.jpg' 
+        l = [str(batch_idx*64 + i + 10000).zfill(6) for i in range(64)]  
+    data = []
+    for idx in l:
+        img = Image.open(template%idx)
+        data.append(np.array(img))
+    data = [totensor(i) for i in data]
+    return torch.stack(data, dim=0)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--workers', type=int, help='number of data loading workers', default=8)
-parser.add_argument('--batchSize', type=int, default=100, help='input batch size')
-parser.add_argument('--imageSize', type=int, default=64, help='the height / width of the input image to network')
-parser.add_argument('--ngf', type=int, default=64)
-parser.add_argument('--ndf', type=int, default=64)
-parser.add_argument('--niter', type=int, default=25, help='number of epochs to train for')
-parser.add_argument('--lr', type=float, default=0.0002, help='learning rate, default=0.0002')
-parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
-parser.add_argument('--cuda', default = True, action='store_true', help='enables cuda')
-parser.add_argument('--ngpu', type=int, default=1, help='number of GPUs to use')
-parser.add_argument('--gpu_ids', type=int, default=0, help='ids of GPUs to use')
-parser.add_argument('--modelPath', default='', help="path to model (to continue training)")
-parser.add_argument('--dirCheckpoints', default='.', help='folder to model checkpoints')
-parser.add_argument('--dirImageoutput', default='.', help='folder to output images')
-parser.add_argument('--dirTestingoutput', default='.', help='folder to testing results/images')
-parser.add_argument('--manualSeed', type=int, help='manual seed')
-parser.add_argument('--epoch_iter', type=int,default=200, help='number of epochs on entire dataset')
-parser.add_argument('--location', type = int, default=0, help ='where is the code running')
-parser.add_argument('-f',type=str,default= '', help='dummy input required for jupyter notebook')
-opt = parser.parse_args()
-print(opt)
 
 ## do not change the data directory
 opt.data_dir_prefix = '/nfs/bigdisk/zhshu/data/fare/'
@@ -200,9 +195,9 @@ TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01
 
 
 
-class AE(nn.Module):
+class VAE(nn.Module):
     def __init__(self, nc, ngf, ndf, latent_variable_size):
-        super(AE, self).__init__()
+        super(VAE, self).__init__()
 
         self.nc = nc # num channels
         self.ngf = ngf # num generator filters
@@ -226,6 +221,7 @@ class AE(nn.Module):
         self.bn5 = nn.BatchNorm2d(ndf*8)
 
         self.fc1 = nn.Linear(ndf*8*4*4, latent_variable_size)
+        self.fc2 = nn.Linear(ndf*8*4*4, latent_variable_size)
 
         # decoder
         self.d1 = nn.Linear(latent_variable_size, ngf*8*2*4*4)
@@ -267,7 +263,16 @@ class AE(nn.Module):
         h5 = self.leakyrelu(self.bn5(self.e5(h4)))
         h5 = h5.view(-1, self.ndf*8*4*4)
 
-        return self.fc1(h5)
+        return self.fc1(h5), self.fc2(h5)
+
+    def reparametrize(self, mu, logvar):
+        std = logvar.mul(0.5).exp_()
+        if args.cuda:
+            eps = torch.cuda.FloatTensor(std.size()).normal_()
+        else:
+            eps = torch.FloatTensor(std.size()).normal_()
+        eps = Variable(eps)
+        return eps.mul(std).add_(mu)
 
     def decode(self, z):
         #print("decode")
@@ -280,42 +285,46 @@ class AE(nn.Module):
 
         return self.sigmoid(self.d6(self.pd5(self.up5(h5))))
 
-    def get_latent_vectors(self, x):
-        z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # whole latent vector
-        z_per = z[0-63] # part of z repesenenting identity of the person
-        z_exp = z[64-127]  # part of z representing the expression
-        return z, z_per, z_exp
+    def get_latent_var(self, x):
+        print("get latent var")
+        mu, logvar = self.encode(x.view(-1, self.nc, self.ndf, self.ngf))
+        z = self.reparametrize(mu, logvar)
+        return z
 
     def forward(self, x):
-        z, z_per, z_exp = get_latent_vectors(self, x)
-        recon_x = self.decode(z)
-        return recon, z, z_per, z_exp
+        #print("FORWARD")
+        mu_per, logvar_per = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # "person" distribution 
+        mu_ex, logvar_ex = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # "expression" distribution
+        z_per = self.reparametrize(mu_per, logvar_per)
+        z_ex = self.reparametrize(mu_ex, logvar_ex)
+        recon_per = self.decode(z_per)
+        recon_ex = self.decode(z_ex)
+        return recon_per, mu_per, logvar_per, recon_ex, mu_ex, logvar_ex 
 
 
-model = AE(nc=3, ngf=64, ndf=64, latent_variable_size=128)
+model = VAE(nc=3, ngf=64, ndf=64, latent_variable_size=500)
 
-# if opt.cuda:
-#     model.cuda()
+if args.cuda:
+    model.cuda()
 
-def recon_loss_func(recon_x, x):
-    return nn.MSELoss(recon_x, x, size_average=None)
+reconstruction_function = nn.MSELoss()
+reconstruction_function.size_average = False
+def loss_function(recon_x, x, mu, logvar):
+    MSE = reconstruction_function(recon_x, x)
 
-def siamese_loss_func(z1, z2, label):
-    y = torch.tensor([1])
-    y.requires_grad_(False)
-    if label == 1: # measure similarity
-        return nn.CosineEmbeddingLoss(z1, z2, y)
-    elif label == -1: # measure dissimilarity
-        y = torch.tensor([-1])
-        return nn.CosineEmbeddingLoss(z1, z2, y)
+    # https://arxiv.org/abs/1312.6114 (Appendix B)
+    # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
+    KLD_element = mu.pow(2).add_(logvar.exp()).mul_(-1).add_(1).add_(logvar)
+    KLD = torch.sum(KLD_element).mul_(-0.5)
+
+    return MSE + KLD
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
 def train(epoch):
     print("train")
     model.train()
-    recon_train_loss = 0
-    siamese_train_loss = 0
+    train_loss = 0
     dataroot = random.sample(TrainingData,1)[0]
 
     dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
@@ -331,111 +340,49 @@ def train(epoch):
         # dp1_img: image of data point 1, which is different in ``person'' compare to dp0
         dp0_img, dp9_img, dp1_img = data_point
         dp0_img, dp9_img, dp1_img = parseSampledDataTripletMultipie(dp0_img, dp9_img, dp1_img)
-        if opt.cuda:
+        if args.cuda:
             dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
         dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
         optimizer.zero_grad()
-        z_dp9, z_per_dp9, z_exp_dp9 = get_latent_vectors(dp9_img)
-        z_dp1, z_per_dp1, z_exp_dp1 = get_latent_vectors(dp1_img)
-
-        recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
-        recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
-
-        optimizer.zero_grad()
-        recon_loss.backward()
-        recon_train_loss += recon_loss.data[0]
-
-        #calc siamese loss
-
-        siamese_loss = siamese_loss_func(z_per_dp0, z_per_dp9, 1) + siamese_loss_func(z_exp_dp0, z_exp_dp1, 1)
-        siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp9, -1)
-        siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp1, -1)
-
-        optimizer.zero_grad()
-        siamese_loss.backward()
-        siamese_train_loss = siamese_loss.data[0]
-
-       
+        recon_batch_per0, mu_per0, logvar_per0, recon_batch_ex0, mu_ex0, logvar_ex0 = model(dp0_img)
+        recon_batch_per9, mu_per9, logvar_per9, recon_batch_ex9, mu_ex9, logvar_ex9 = model(dp9_img)
+        recon_batch_per1, mu_per1, logvar_per1, recon_batch_ex1, mu_ex1, logvar_ex1 = model(dp0_img)
 
 
+
+        loss = loss_function(recon_batch, data_point, mu, logvar)
+        loss.backward()
+        train_loss += loss.data[0]
         optimizer.step()
         if batch_idx % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}'.format(
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), (len(train_loader)*64),
                 100. * batch_idx / len(train_loader),
-                recon_loss.data[0] / len(data)))
+                loss.data[0] / len(data)))
 
-    print('====> Epoch: {} Average recon loss: {:.4f}'.format(
-          epoch, recon_train_loss / (len(data_loader)*64)))
-
-    print(dp0_img.size())
-    print(dp9_img.size())
-    print(dp1_img.size())
-    visualizeAsImages(dp0_img.data.clone(), 
-        opt.dirImageoutput, 
-        filename='iter_'+str(iter_mark)+'_img0', n_sample = 25, nrow=5, normalize=False)
-    visualizeAsImages(dp9_img.data.clone(), 
-        opt.dirImageoutput, 
-        filename='iter_'+str(iter_mark)+'_img9', n_sample = 25, nrow=5, normalize=False)
-    visualizeAsImages(dp1_img.data.clone(), 
-        opt.dirImageoutput, 
-        filename='iter_'+str(iter_mark)+'_img1', n_sample = 25, nrow=5, normalize=False)
-    print('Test image saved, kill the process by Ctrl + C')
-
-    return recon_train_loss / (len(data_loader)*64), siamese_train_loss / (len(data_loader)*64)
+    print('====> Epoch: {} Average loss: {:.4f}'.format(
+          epoch, train_loss / (len(train_loader)*64)))
+    return train_loss / (len(train_loader)*64)
 
 def test(epoch):
     print("test")
     model.eval()
-    recon_test_loss = 0
-    siamese_test_loss = 0
-    dataroot = random.sample(TestingData,1)[0]
+    test_loss = 0
+    for batch_idx in test_loader:
+        data = load_batch(batch_idx, False)
+     #   data = Variable(data, volatile=True)
+        if args.cuda:
+            data = data.cuda()
+        recon_batch, mu, logvar = model(data)
+        test_loss += loss_function(recon_batch, data, mu, logvar).data[0]
 
-    dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
-    print('# size of the current (sub)dataset is %d' %len(dataset))
-    train_amount = train_amount + len(dataset)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
-    for batch_idx, data_point in enumerate(dataloader, 0):
-        gc.collect() # collect garbage
-        dp0_img, dp9_img, dp1_img = data_point
-        dp0_img, dp9_img, dp1_img = parseSampledDataTripletMultipie(dp0_img, dp9_img, dp1_img)
-        if opt.cuda:
-            dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
-        dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
+        torchvision.utils.save_image(data.data, '../imgs/Epoch_{}_data.jpg'.format(epoch), nrow=8, padding=2)
+        torchvision.utils.save_image(recon_batch.data, '../imgs/Epoch_{}_recon.jpg'.format(epoch), nrow=8, padding=2)
 
-        z_dp9, z_per_dp9, z_exp_dp9 = get_latent_vectors(dp9_img)
-        z_dp1, z_per_dp1, z_exp_dp1 = get_latent_vectors(dp1_img)
-
-        recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
-        recon_test_loss += recon_loss_func(recon_batch_dp0, dp0_img).data[0]
-
-        #calc siamese loss
-
-        siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp9, 1)
-        siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp1, 1)
-        siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp9, -1)
-        siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp1, -1)
-
-        siamese_test_loss = siamese_loss.data[0]
-
-
-
-    # for batch_idx in test_loader:
-    #     data = load_batch(batch_idx, False)
-
-    #     if args.cuda:
-    #         data = data.cuda()
-    #     recon_batch, mu, logvar = model(data)
-    #     test_loss += loss_function(recon_batch, data, mu, logvar).data[0]
-
-    #     torchvision.utils.save_image(data.data, '../imgs/Epoch_{}_data.jpg'.format(epoch), nrow=8, padding=2)
-    #     torchvision.utils.save_image(recon_batch.data, '../imgs/Epoch_{}_recon.jpg'.format(epoch), nrow=8, padding=2)
-
-    recon_test_loss /= (len(dataloader)*64)
-    siamese_test_loss /= (len(dataloader)*64)
-    print('====> Test set recon loss: {:.4f}'.format(recon_test_loss))
-    return recon_test_loss, siamese_test_loss
+    test_loss /= (len(test_loader)*64)
+    print('====> Test set loss: {:.4f}'.format(test_loss))
+    return test_loss
 
 
 def perform_latent_space_arithmatics(items): # input is list of tuples of 3 [(a1,b1,c1), (a2,b2,c2)]
@@ -501,7 +448,7 @@ def rand_faces(num=5):
     model.eval()
     z = torch.randn(num*num, model.latent_variable_size)
     #z = Variable(z, volatile=True)
-    if opt.cuda:
+    if args.cuda:
         z = z.cuda()
     recon = model.decode(z)
     torchvision.utils.save_image(recon.data, '../imgs/rand_faces.jpg', nrow=num, padding=2)
@@ -517,8 +464,8 @@ def start_training():
     # start_epoch, _ = load_last_model()
     start_epoch = 0
 
-    for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
-        recon_train_loss, siamese_train_loss = train(epoch)
+    for epoch in range(start_epoch + 1, start_epoch + args.epochs + 1):
+        train_loss = train(epoch)
         test_loss = test(epoch)
         # torch.save(model.state_dict(), '../models/Epoch_{}_Train_loss_{:.4f}_Test_loss_{:.4f}.pth'.format(epoch, train_loss, test_loss))
 
