@@ -294,8 +294,8 @@ class AE(nn.Module):
 
 model = AE(nc=3, ngf=64, ndf=64, latent_variable_size=128)
 
-# if opt.cuda:
-#     model.cuda()
+if opt.cuda:
+     model.cuda()
 
 def recon_loss_func(recon_x, x):
     return nn.MSELoss(recon_x, x, size_average=None)
