@@ -281,7 +281,7 @@ class AE(nn.Module):
 		return self.sigmoid(self.d6(self.pd5(self.up5(h5))))
 
 	def get_latent_vectors(self, x):
-		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf))[1] # whole latent vector
+		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # whole latent vector
 		print(z.size())
 		#z = z.view(1, 128)
 		z_per = z[0:64] # part of z repesenenting identity of the person
@@ -314,10 +314,10 @@ def siamese_loss_func(z1, z2, label):
 	print(z2.size())
 	y.requires_grad_(False)
 	if label == 1: # measure similarity
-		return siamese_func(z1, z2, y)
+		return siamese_func(z1, z2, target=y)
 	elif label == -1: # measure dissimilarity
 		y = torch.tensor([-1, -1], dtype=torch.float).cuda()
-		return siamese_func(z1, z2, y)
+		return siamese_func(z1, z2, target=y)
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
