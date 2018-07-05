@@ -225,7 +225,7 @@ class AE(nn.Module):
 		self.e5 = nn.Conv2d(ndf*8, ndf*8, 4, 2, 1)
 		self.bn5 = nn.BatchNorm2d(ndf*8)
 
-		self.fc1 = nn.Linear(ndf*8*4*4, latent_variable_size)
+		self.fc1 = nn.Linear(ndf*8*4*4, latent_variable_size) #if ndf=64, args are (8192, 128)
 
 		# decoder
 		self.d1 = nn.Linear(latent_variable_size, ngf*8*2*4*4)
@@ -281,7 +281,7 @@ class AE(nn.Module):
 		return self.sigmoid(self.d6(self.pd5(self.up5(h5))))
 
 	def get_latent_vectors(self, x):
-		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # whole latent vector
+		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)).normal_() # whole latent vector
 		z_per = z[0:64] # part of z repesenenting identity of the person
 		z_exp = z[64:]  # part of z representing the expression
 		return z, z_per, z_exp
