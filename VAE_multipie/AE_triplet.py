@@ -267,8 +267,8 @@ class AE(nn.Module):
 		h5 = self.leakyrelu(self.bn5(self.e5(h4)))
 		h5 = h5.view(-1, self.ndf*8*4*4)
 
-		#return self.fc1(h5)
-		return self.bn5(self.e5(h4))
+		return self.fc1(h5)
+		#return self.bn5(self.e5(h4))
 
 	def decode(self, z):
 		#print("decode")
