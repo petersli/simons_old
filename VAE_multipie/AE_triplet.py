@@ -282,7 +282,7 @@ class AE(nn.Module):
 
 	def get_latent_vectors(self, x):
 		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # whole latent vector
-		z = z.view(1, -1)
+		z = z.view(1, 128)
 		z_per = z[0:64] # part of z repesenenting identity of the person
 		z_exp = z[64:]  # part of z representing the expression
 		return z, z_per, z_exp
@@ -293,7 +293,7 @@ class AE(nn.Module):
 		return recon_x, z, z_per, z_exp
 
 
-model = AE(nc=3, ngf=64, ndf=64, latent_variable_size=128)
+model = AE(nc=3, ngf=32, ndf=32, latent_variable_size=128)
 
 if opt.cuda:
 	 model.cuda()
