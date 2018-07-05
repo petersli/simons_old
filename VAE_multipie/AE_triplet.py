@@ -305,7 +305,7 @@ def recon_loss_func(recon_x, x):
 def siamese_loss_func(z1, z2, label):
 	siamese_func = nn.CosineEmbeddingLoss()
 	siamese_func.size_average = False
-    y = torch.tensor([1])
+	y = torch.tensor([1])
     print(y)
     print(y.item())
     y.requires_grad_(False)
