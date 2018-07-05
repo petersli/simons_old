@@ -306,7 +306,7 @@ def siamese_loss_func(z1, z2, label):
 	siamese_func = nn.CosineEmbeddingLoss()
 	siamese_func.size_average = False
 	siamese_func.margin = 0.5
-	y = torch.cuda.tensor([1])
+	y = torch.cuda.Tensor([1])
 	print(y)
 	print(y.item())
 	y.requires_grad_(False)
