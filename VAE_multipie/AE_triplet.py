@@ -282,7 +282,7 @@ class AE(nn.Module):
 
 	def get_latent_vectors(self, x):
 		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # whole latent vector
-		print("pre slice {}".format(z.size())
+		print("pre slice {}".format(z.size()))
 		#z = z.view(1, 128)
 		z_per = z[0:64] # part of z repesenenting identity of the person
 		z_exp = z[64:]  # part of z representing the expression
