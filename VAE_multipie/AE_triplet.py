@@ -289,7 +289,7 @@ class AE(nn.Module):
     def forward(self, x):
         z, z_per, z_exp = model.get_latent_vectors(x)
         recon_x = self.decode(z)
-        return recon, z, z_per, z_exp
+        return recon_x, z, z_per, z_exp
 
 
 model = AE(nc=3, ngf=64, ndf=64, latent_variable_size=128)
