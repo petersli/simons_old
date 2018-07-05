@@ -262,12 +262,13 @@ class AE(nn.Module):
 		#print("encode")
 		h1 = self.leakyrelu(self.bn1(self.e1(x)))
 		h2 = self.leakyrelu(self.bn2(self.e2(h1)))
-		#h3 = self.leakyrelu(self.bn3(self.e3(h2)))
-		h4 = self.leakyrelu(self.bn4(self.e4(h2)))
-		h5 = self.leakyrelu(self.bn5(self.e5(h4)))
-		h5 = h5.view(-1, self.ndf*8*4*4)
+		h3 = self.leakyrelu(self.bn3(self.e3(h2)))
+		h4 = self.leakyrelu(self.bn4(self.e4(h3)))
+		#h5 = self.leakyrelu(self.bn5(self.e5(h4)))
+		#h5 = h5.view(-1, self.ndf*8*4*4)
+		h4 = h4.view(-1, self.ndf*8*4*4)
 
-		return self.fc1(h5)
+		return self.fc1(h4)
 		#return self.bn5(self.e5(h4))
 
 	def decode(self, z):
@@ -275,11 +276,11 @@ class AE(nn.Module):
 		h1 = self.relu(self.d1(z))
 		h1 = h1.view(-1, self.ngf*8*2, 2, 2)
 		h2 = self.leakyrelu(self.bn6(self.d2(self.pd1(self.up1(h1)))))
-		#h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
-		h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h2)))))
-		h5 = self.leakyrelu(self.bn9(self.d5(self.pd4(self.up4(h4)))))
+		h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
+		h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h3)))))
+		#h5 = self.leakyrelu(self.bn9(self.d5(self.pd4(self.up4(h4)))))
 
-		return self.sigmoid(self.d6(self.pd5(self.up5(h5))))
+		return self.sigmoid(self.d6(self.pd5(self.up5(h4))))
 
 	def get_latent_vectors(self, x):
 		z = self.encode(x) # whole latent vector
