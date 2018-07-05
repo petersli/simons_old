@@ -306,14 +306,14 @@ def siamese_loss_func(z1, z2, label):
 	siamese_func = nn.CosineEmbeddingLoss()
 	siamese_func.size_average = False
 	siamese_func.margin = 0.5
-	y = torch.tensor([1]).cuda()
+	y = torch.tensor([1], dtype=torch.float64).cuda()
 	print(y)
 	print(y.item())
 	y.requires_grad_(False)
 	if label == 1: # measure similarity
 		return siamese_func(z1, z2, y)
 	elif label == -1: # measure dissimilarity
-		y = torch.tensor([-1])
+		y = torch.tensor([-1], dtype=torch.float64).cuda()
 		return siamese_func(z1, z2, y)
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
