@@ -316,7 +316,7 @@ def siamese_loss_func(z1, z2, label):
 	if label == 1: # measure similarity
 		return siamese_func(z1, z2, target=y)
 	elif label == -1: # measure dissimilarity
-		y = torch.tensor([-1, -1], dtype=torch.float).cuda()
+		y = y * -1
 		return siamese_func(z1, z2, target=y)
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
