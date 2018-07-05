@@ -281,7 +281,8 @@ class AE(nn.Module):
 		return self.sigmoid(self.d6(self.pd5(self.up5(h5))))
 
 	def get_latent_vectors(self, x):
-		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf))[1] # whole latent vector
+		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # whole latent vector
+		print(z.size())
 		#z = z.view(1, 128)
 		z_per = z[0:64] # part of z repesenenting identity of the person
 		z_exp = z[64:]  # part of z representing the expression
