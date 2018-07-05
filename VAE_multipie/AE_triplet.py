@@ -225,7 +225,7 @@ class AE(nn.Module):
 		self.e5 = nn.Conv2d(ndf*8, ndf*8, 4, 2, 1)
 		self.bn5 = nn.BatchNorm2d(ndf*8)
 
-		self.fc1 = nn.Linear(ndf*8*2*2, latent_variable_size) #if ndf=64, args are (8192, 128)
+		self.fc1 = nn.Linear(ndf*8*2*4*4, latent_variable_size) #if ndf=64, args are (8192, 128)
 
 		# decoder
 		self.d1 = nn.Linear(latent_variable_size, ngf*8*2*4*4)
@@ -262,8 +262,8 @@ class AE(nn.Module):
 		#print("encode")
 		h1 = self.leakyrelu(self.bn1(self.e1(x)))
 		h2 = self.leakyrelu(self.bn2(self.e2(h1)))
-		h3 = self.leakyrelu(self.bn3(self.e3(h2)))
-		h4 = self.leakyrelu(self.bn4(self.e4(h3)))
+		#h3 = self.leakyrelu(self.bn3(self.e3(h2)))
+		h4 = self.leakyrelu(self.bn4(self.e4(h2)))
 		h5 = self.leakyrelu(self.bn5(self.e5(h4)))
 		h5 = h5.view(-1, self.ndf*8*4*4)
 
@@ -275,8 +275,8 @@ class AE(nn.Module):
 		h1 = self.relu(self.d1(z))
 		h1 = h1.view(-1, self.ngf*8*2, 2, 2)
 		h2 = self.leakyrelu(self.bn6(self.d2(self.pd1(self.up1(h1)))))
-		h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
-		h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h3)))))
+		#h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
+		h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h2)))))
 		h5 = self.leakyrelu(self.bn9(self.d5(self.pd4(self.up4(h4)))))
 
 		return self.sigmoid(self.d6(self.pd5(self.up5(h5))))
@@ -550,3 +550,13 @@ if __name__ == '__main__':
 	# l = zip(it, it, it)
 	# # latent_space_transition(l)
 	# perform_latent_space_arithmatics(l)
+
+class waspSlicer(nn.Module):
+   def __init__(self, opt, ngpu=1, pstart = 0, pend=1):
+       super(waspSlicer, self).__init__()
+       self.ngpu = ngpu
+       self.pstart = pstart
+       self.pend = pend
+   def forward(self, input):
+       output = input[:,self.pstart:self.pend].contiguous()
+       return output
