@@ -298,7 +298,7 @@ if opt.cuda:
      model.cuda()
 
 def recon_loss_func(recon_x, x):
-    return nn.MSELoss(recon_x, x, size_average=None)
+    return nn.MSELoss(recon_x, x, size_average=False)
 
 def siamese_loss_func(z1, z2, label):
     y = torch.tensor([1])
