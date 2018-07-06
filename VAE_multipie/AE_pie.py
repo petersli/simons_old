@@ -328,6 +328,7 @@ class AE(nn.Module):
 		# recon_x = self.decode(z)
 		# return recon_x, z
 		z = self.encoder(x)
+		print(z.size())
 		recon_x = self.decoder(z)
 		return recon_x, z
 
