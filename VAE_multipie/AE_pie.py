@@ -356,7 +356,7 @@ def train(epoch):
 
 		optimizer.step()
 		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}'.format(
-			epoch, batch_idx * batch_size, (len(dataloader)*batch_size),
+			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
 			100. * batch_idx / len(dataloader),
 			recon_loss.data[0] / len(dataloader)))
 
