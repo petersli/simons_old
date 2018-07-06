@@ -291,7 +291,7 @@ class AE(nn.Module):
 		return z, z_per, z_exp
 
 	def forward(self, x):
-		z, z_per, z_exp = model.get_latent_vectors(x) #the view() is missing right now
+		z, z_per, z_exp = model.get_latent_vectors(x.view(-1, self.nc, self.ndf, self.ngf))
 		recon_x = self.decode(z)
 		return recon_x, z, z_per, z_exp
 
@@ -306,28 +306,12 @@ def recon_loss_func(recon_x, x):
 	recon_func.size_average = False
 	return recon_func(recon_x, x)
 
-def siamese_loss_func(z1, z2, label):
-	siamese_func = nn.CosineEmbeddingLoss()
-	siamese_func.size_average = False
-	siamese_func.margin = 0.5
-	y = torch.ones([opt.batchSize / 4], dtype=torch.float).cuda()
-	print(y.size())
-	print(z1.size())
-	print(z2.size())
-	y.requires_grad_(False)
-	if label == 1: # measure similarity
-		return siamese_func(z1, z2, target=y)
-	elif label == -1: # measure dissimilarity
-		y = y * -1
-		return siamese_func(z1, z2, target=y)
-
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
 def train(epoch):
 	print("train")
 	model.train()
 	recon_train_loss = 0
-	siamese_train_loss = 0
 	dataroot = random.sample(TrainingData,1)[0]
 
 	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
@@ -347,9 +331,9 @@ def train(epoch):
 			dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
 		dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
-		optimizer.zero_grad()
-		z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
-		z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
+		# optimizer.zero_grad()
+		# z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
+		# z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
 
 		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
@@ -360,26 +344,26 @@ def train(epoch):
 
 		#calc siamese loss
 
-		siamese_loss = siamese_loss_func(z_per_dp0, z_per_dp9, 1) + siamese_loss_func(z_exp_dp0, z_exp_dp1, 1)
-		siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp9, -1)
-		siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp1, -1)
+		# siamese_loss = siamese_loss_func(z_per_dp0, z_per_dp9, 1) + siamese_loss_func(z_exp_dp0, z_exp_dp1, 1)
+		# siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp9, -1)
+		# siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp1, -1)
 
-		optimizer.zero_grad()
-		siamese_loss.backward()
-		siamese_train_loss = siamese_loss.data[0]
+		# optimizer.zero_grad()
+		# siamese_loss.backward()
+		# siamese_train_loss = siamese_loss.data[0]
 
 	   
 
 
 		optimizer.step()
 		if batch_idx % args.log_interval == 0:
-			print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}\tSiameseLoss: {:.6f}'.format(
+			print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}'.format(
 				epoch, batch_idx * len(data), (len(train_loader)*64),
 				100. * batch_idx / len(train_loader),
-				recon_loss.data[0] / len(data_loader), siamese_loss.data[0] / len(data_loader)))
+				recon_loss.data[0] / len(data_loader)))
 
-	print('====> Epoch: {} Average recon loss: {:.4f}\tAverage siamese loss: {:.4f}'.format(
-		  epoch, recon_train_loss / (len(data_loader)*64), recon_train_loss / (len(data_loader)*64)))
+	print('====> Epoch: {} Average recon loss: {:.4f}'.format(
+		  epoch, recon_train_loss / (len(data_loader)*64)))
 
 	print(dp0_img.size())
 	print(dp9_img.size())
@@ -395,7 +379,7 @@ def train(epoch):
 		filename='iter_'+str(iter_mark)+'_img1', n_sample = 25, nrow=5, normalize=False)
 	print('Test image saved, kill the process by Ctrl + C')
 
-	return recon_train_loss / (len(data_loader)*64), siamese_train_loss / (len(data_loader)*64)
+	return recon_train_loss / (len(data_loader)*64)
 
 def test(epoch):
 	print("test")
@@ -416,20 +400,20 @@ def test(epoch):
 			dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
 		dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
-		z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
-		z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
+		# z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
+		# z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
 
 		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
 		recon_test_loss += recon_loss_func(recon_batch_dp0, dp0_img).data[0]
 
 		#calc siamese loss
 
-		siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp9, 1)
-		siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp1, 1)
-		siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp9, -1)
-		siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp1, -1)
+		# siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp9, 1)
+		# siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp1, 1)
+		# siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp9, -1)
+		# siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp1, -1)
 
-		siamese_test_loss = siamese_loss.data[0]
+		# siamese_test_loss = siamese_loss.data[0]
 
 
 
@@ -446,8 +430,8 @@ def test(epoch):
 
 	recon_test_loss /= (len(dataloader)*64)
 	siamese_test_loss /= (len(dataloader)*64)
-	print('====> Test set recon loss: {:.4f} \tsiamese loss: {:.4f}'.format(recon_test_loss, siamese_test_loss))
-	return recon_test_loss, siamese_test_loss
+	print('====> Test set recon loss: {:.4f}'.format(recon_test_loss))
+	return recon_test_loss
 
 
 def perform_latent_space_arithmatics(items): # input is list of tuples of 3 [(a1,b1,c1), (a2,b2,c2)]
