@@ -225,10 +225,10 @@ class AE(nn.Module):
 		self.e5 = nn.Conv2d(ndf*8, ndf*8, 4, 2, 1)
 		self.bn5 = nn.BatchNorm2d(ndf*8)
 
-		self.fc1 = nn.Linear(ndf*8*2*4*4, latent_variable_size) #if ndf=64, args are (8192, 128)
+		self.fc1 = nn.Linear(ndf*8*4*4, latent_variable_size) #if ndf=64, args are (8192, 128)
 
 		# decoder
-		self.d1 = nn.Linear(latent_variable_size, ngf*8*2*4*4)
+		self.d1 = nn.Linear(latent_variable_size, ngf*8*4*4)
 
 		self.up1 = nn.Upsample(scale_factor=2)
 		self.pd1 = nn.ReplicationPad2d(1)
