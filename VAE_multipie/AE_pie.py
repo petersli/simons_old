@@ -442,7 +442,7 @@ def train(epoch):
 		filename='epoch_'+str(epoch)+'_recon1', n_sample = 25, nrow=5, normalize=False)
 
 
-	print('Test image saved, kill the process by Ctrl + C')
+	print('Data and reconstructions saved.')
 
 	return recon_train_loss / (len(dataloader) * opt.batchSize)
 
@@ -450,7 +450,7 @@ def test(epoch):
 	print("test")
 	model.eval()
 	recon_test_loss = 0
-	siamese_test_loss = 0
+	#siamese_test_loss = 0
 	dataroot = random.sample(TestingData,1)[0]
 
 	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
@@ -478,7 +478,7 @@ def test(epoch):
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_train_loss += recon_loss.data[0]
+		recon_test_loss += recon_loss.data[0]
 
 
 		#dp9
@@ -486,14 +486,14 @@ def test(epoch):
 		recon_loss = recon_loss_func(recon_batch_dp9, dp9_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_train_loss += recon_loss.data[0]
+		recon_test_loss += recon_loss.data[0]
 
 		#dp1
 		recon_batch_dp1, z_dp1 = model(dp1_img)
 		recon_loss = recon_loss_func(recon_batch_dp1, dp1_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_train_loss += recon_loss.data[0]
+		recon_test_loss += recon_loss.data[0]
 
 		#calc siamese loss
 
