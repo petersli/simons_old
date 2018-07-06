@@ -225,10 +225,10 @@ class AE(nn.Module):
 		self.e5 = nn.Conv2d(ndf*8, ndf*8, 4, 2, 1)
 		self.bn5 = nn.BatchNorm2d(ndf*8)
 
-		self.fc1 = nn.Linear(ndf*8*4*4, latent_variable_size) #if ndf=64, args are (8192, 128)
+		self.fc1 = nn.Linear(ndf*8*4*4*2, latent_variable_size) #if ndf=64, args are (8192, 128)
 
 		# decoder
-		self.d1 = nn.Linear(latent_variable_size, ngf*8*4*4)
+		self.d1 = nn.Linear(latent_variable_size, ngf*8*4*4*2)
 
 		self.up1 = nn.Upsample(scale_factor=2)
 		self.pd1 = nn.ReplicationPad2d(1)
@@ -265,7 +265,7 @@ class AE(nn.Module):
 		h3 = self.leakyrelu(self.bn3(self.e3(h2)))
 		h4 = self.leakyrelu(self.bn4(self.e4(h3)))
 		h5 = self.leakyrelu(self.bn5(self.e5(h4)))
-		h5 = h5.view(-1, self.ndf*8*4*4)
+		h5 = h5.view(-1, self.ndf*8*4*4*2)
 
 		return self.fc1(h5)
 		#return self.bn5(self.e5(h4))
