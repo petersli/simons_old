@@ -215,7 +215,7 @@ class AE(nn.Module):
 		self.decoder = nn.Sequential(
 			nn.ConvTranspose2d(8, 16, 3, stride=2), #in_channels, out_channels, kernel_size, stride, padding
 			nn.ReLU(True),
-			nn.ConvTranspose2d(16, 8, 3, stride=3, padding=1),
+			nn.ConvTranspose2d(16, 8, 2, stride=3, padding=1),
 			nn.ReLU(True),
 			nn.ConvTranspose2d(8, 3, 2, stride=2, padding=1),
 			nn.Tanh()
