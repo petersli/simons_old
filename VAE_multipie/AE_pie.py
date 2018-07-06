@@ -201,7 +201,7 @@ TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01
 
 
 class AE(nn.Module):
-	def __init__(self, nc, ngf, ndf, latent_variable_size):
+	def __init__(self):
 		super(AE, self).__init__()
 
 		# self.nc = nc # num channels
@@ -339,7 +339,8 @@ class AE(nn.Module):
 
 
 
-model = AE(nc=3, ngf=64, ndf=64, latent_variable_size=128)
+#model = AE(nc=3, ngf=64, ndf=64, latent_variable_size=128)
+model=AE()
 
 if opt.cuda:
 	 model.cuda()
