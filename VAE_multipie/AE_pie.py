@@ -356,12 +356,12 @@ def train(epoch):
 
 		optimizer.step()
 		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}'.format(
-			epoch, batch_idx * len(data_loader), (len(data_loader)*64),
-			100. * batch_idx / len(data_loader),
-			recon_loss.data[0] / len(data_loader)))
+			epoch, batch_idx * len(dataloader), (len(dataloader)*64),
+			100. * batch_idx / len(dataloader),
+			recon_loss.data[0] / len(dataloader)))
 
 	print('====> Epoch: {} Average recon loss: {:.4f}'.format(
-		  epoch, recon_train_loss / (len(data_loader)*64)))
+		  epoch, recon_train_loss / (len(dataloader)*64)))
 
 	print(dp0_img.size())
 	print(dp9_img.size())
@@ -377,7 +377,7 @@ def train(epoch):
 		filename='iter_'+str(iter_mark)+'_img1', n_sample = 25, nrow=5, normalize=False)
 	print('Test image saved, kill the process by Ctrl + C')
 
-	return recon_train_loss / (len(data_loader)*64)
+	return recon_train_loss / (len(dataloader)*64)
 
 def test(epoch):
 	print("test")
