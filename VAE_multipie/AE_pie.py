@@ -375,9 +375,24 @@ def train(epoch):
 		# z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
 		# z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
 
+		#dp0
 		recon_batch_dp0, z_dp0 = model(dp0_img)
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
+		optimizer.zero_grad()
+		recon_loss.backward()
+		recon_train_loss += recon_loss.data[0]
 
+
+		#dp9
+		recon_batch_dp9, z_dp9 = model(dp9_img)
+		recon_loss = recon_loss_func(recon_batch_dp9, dp9_img)
+		optimizer.zero_grad()
+		recon_loss.backward()
+		recon_train_loss += recon_loss.data[0]
+
+		#dp1
+		recon_batch_dp1, z_dp1 = model(dp1_img)
+		recon_loss = recon_loss_func(recon_batch_dp1, dp1_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
 		recon_train_loss += recon_loss.data[0]
@@ -404,9 +419,7 @@ def train(epoch):
 	print('====> Epoch: {} Average recon loss: {:.4f}'.format(
 		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize)))
 
-	print(dp0_img.size())
-	print(dp9_img.size())
-	print(dp1_img.size())
+	#data
 	visualizeAsImages(dp0_img.data.clone(), 
 		opt.dirImageoutput, 
 		filename='epoch_'+str(epoch)+'_img0', n_sample = 25, nrow=5, normalize=False)
@@ -416,6 +429,19 @@ def train(epoch):
 	visualizeAsImages(dp1_img.data.clone(), 
 		opt.dirImageoutput, 
 		filename='epoch_'+str(epoch)+'_img1', n_sample = 25, nrow=5, normalize=False)
+
+	#reconstructions
+	visualizeAsImages(recon_batch_dp0.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_recon0', n_sample = 25, nrow=5, normalize=False)
+	visualizeAsImages(recon_batch_dp9.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_recon9', n_sample = 25, nrow=5, normalize=False)
+	visualizeAsImages(recon_batch_dp1.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_recon1', n_sample = 25, nrow=5, normalize=False)
+
+
 	print('Test image saved, kill the process by Ctrl + C')
 
 	return recon_train_loss / (len(dataloader) * opt.batchSize)
@@ -433,17 +459,41 @@ def test(epoch):
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
 	for batch_idx, data_point in enumerate(dataloader, 0):
 		gc.collect() # collect garbage
+		# sample the data points: 
+		# dp0_img: image of data point 0
+		# dp9_img: image of data point 9, which is different in ``expression'' compare to dp0
+		# dp1_img: image of data point 1, which is different in ``person'' compare to dp0
 		dp0_img, dp9_img, dp1_img = data_point
 		dp0_img, dp9_img, dp1_img = parseSampledDataTripletMultipie(dp0_img, dp9_img, dp1_img)
 		if opt.cuda:
 			dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
 		dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
+		# optimizer.zero_grad()
 		# z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
 		# z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
 
+		#dp0
 		recon_batch_dp0, z_dp0 = model(dp0_img)
-		recon_test_loss += recon_loss_func(recon_batch_dp0, dp0_img).data[0]
+		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
+		optimizer.zero_grad()
+		recon_loss.backward()
+		recon_train_loss += recon_loss.data[0]
+
+
+		#dp9
+		recon_batch_dp9, z_dp9 = model(dp9_img)
+		recon_loss = recon_loss_func(recon_batch_dp9, dp9_img)
+		optimizer.zero_grad()
+		recon_loss.backward()
+		recon_train_loss += recon_loss.data[0]
+
+		#dp1
+		recon_batch_dp1, z_dp1 = model(dp1_img)
+		recon_loss = recon_loss_func(recon_batch_dp1, dp1_img)
+		optimizer.zero_grad()
+		recon_loss.backward()
+		recon_train_loss += recon_loss.data[0]
 
 		#calc siamese loss
 
@@ -454,99 +504,42 @@ def test(epoch):
 
 		# siamese_test_loss = siamese_loss.data[0]
 
+	#data
+	visualizeAsImages(dp0_img.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_img0', n_sample = 25, nrow=5, normalize=False)
+	visualizeAsImages(dp9_img.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_img9', n_sample = 25, nrow=5, normalize=False)
+	visualizeAsImages(dp1_img.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_img1', n_sample = 25, nrow=5, normalize=False)
+
+	#reconstructions
+	visualizeAsImages(recon_batch_dp0.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_recon0', n_sample = 25, nrow=5, normalize=False)
+	visualizeAsImages(recon_batch_dp9.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_recon9', n_sample = 25, nrow=5, normalize=False)
+	visualizeAsImages(recon_batch_dp1.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_recon1', n_sample = 25, nrow=5, normalize=False)
 
 
-	# for batch_idx in test_loader:
-	#	 data = load_batch(batch_idx, False)
-
-	#	 if args.cuda:
-	#		 data = data.cuda()
-	#	 recon_batch, mu, logvar = model(data)
-	#	 test_loss += loss_function(recon_batch, data, mu, logvar).data[0]
-
-	#	 torchvision.utils.save_image(data.data, '../imgs/Epoch_{}_data.jpg'.format(epoch), nrow=8, padding=2)
-	#	 torchvision.utils.save_image(recon_batch.data, '../imgs/Epoch_{}_recon.jpg'.format(epoch), nrow=8, padding=2)
 
 	recon_test_loss /= (len(dataloader)*64)
-	siamese_test_loss /= (len(dataloader)*64)
+	#siamese_test_loss /= (len(dataloader)*64)
 	print('====> Test set recon loss: {:.4f}'.format(recon_test_loss))
 	return recon_test_loss
 
 
-def perform_latent_space_arithmatics(items): # input is list of tuples of 3 [(a1,b1,c1), (a2,b2,c2)]
-	#load_last_model()
-	model.eval()
-	data = [im for item in items for im in item]
-	data = [totensor(i) for i in data]
-	data = torch.stack(data, dim=0)
-	data = Variable(data, volatile=True)
-	if args.cuda:
-		data = data.cuda()
-	z = model.get_latent_var(data.view(-1, model.nc, model.ndf, model.ngf))
-	it = iter(z.split(1))
-	z = zip(it, it, it)
-	zs = []
-	numsample = 11
-	for i,j,k in z:
-		for factor in np.linspace(0,1,numsample):
-			zs.append((i-j)*factor+k)
-	z = torch.cat(zs, 0)
-	recon = model.decode(z)
-
-	it1 = iter(data.split(1))
-	it2 = [iter(recon.split(1))]*numsample
-	result = zip(it1, it1, it1, *it2)
-	result = [im for item in result for im in item]
-
-	result = torch.cat(result, 0)
-	torchvision.utils.save_image(result.data, '../imgs/vec_math.jpg', nrow=3+numsample, padding=2)
-
-
-def latent_space_transition(items): # input is list of tuples of  (a,b)
-	#load_last_model()
-	model.eval()
-	data = [im for item in items for im in item[:-1]]
-	data = [totensor(i) for i in data]
-	data = torch.stack(data, dim=0)
-	data = Variable(data, volatile=True)
-	if args.cuda:
-		data = data.cuda()
-	z = model.get_latent_var(data.view(-1, model.nc, model.ndf, model.ngf))
-	it = iter(z.split(1))
-	z = zip(it, it)
-	zs = []
-	numsample = 11
-	for i,j in z:
-		for factor in np.linspace(0,1,numsample):
-			zs.append(i+(j-i)*factor)
-	z = torch.cat(zs, 0)
-	recon = model.decode(z)
-
-	it1 = iter(data.split(1))
-	it2 = [iter(recon.split(1))]*numsample
-	result = zip(it1, it1, *it2)
-	result = [im for item in result for im in item]
-
-	result = torch.cat(result, 0)
-	torchvision.utils.save_image(result.data, '../imgs/trans.jpg', nrow=2+numsample, padding=2)
-
-
-def rand_faces(num=5):
-	#load_last_model()
-	model.eval()
-	z = torch.randn(num*num, model.latent_variable_size)
-	#z = Variable(z, volatile=True)
-	if opt.cuda:
-		z = z.cuda()
-	recon = model.decode(z)
-	torchvision.utils.save_image(recon.data, '../imgs/rand_faces.jpg', nrow=num, padding=2)
-
-# def load_last_model():
-#	 models = glob('../models/*.pth')
-#	 model_ids = [(int(f.split('_')[1]), f) for f in models]
-#	 start_epoch, last_cp = max(model_ids, key=lambda item:item[0])  # max returns the model_id with the largest proxy value (item)
-#	 model.load_state_dict(torch.load(last_cp))
-#	 return start_epoch, last_cp
+def load_last_model():
+	 models = glob(opt.dirCheckpoints + '/*.pth')
+	 model_ids = [(int(f.split('_')[1]), f) for f in models]
+	 start_epoch, last_cp = max(model_ids, key=lambda item:item[0])  # max returns the model_id with the largest proxy value (item)
+	 model.load_state_dict(torch.load(last_cp))
+	 return start_epoch, last_cp
 
 def start_training():
 	# start_epoch, _ = load_last_model()
@@ -555,12 +548,12 @@ def start_training():
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
 		recon_train_loss = train(epoch)
 		test_loss = test(epoch)
-		# torch.save(model.state_dict(), '../models/Epoch_{}_Train_loss_{:.4f}_Test_loss_{:.4f}.pth'.format(epoch, train_loss, test_loss))
+		torch.save(model.state_dict(), opt.dirCheckpoints + '/Epoch_{}_Train_loss_{:.4f}_Test_loss_{:.4f}.pth'.format(epoch, recon_train_loss, test_loss))
 
 def last_model_to_cpu():
 	_, last_cp = load_last_model()
 	model.cpu()
-	# torch.save(model.state_dict(), '../models/cpu_'+last_cp.split('/')[-1])
+	torch.save(model.state_dict(), opt.dirCheckpoints + '/cpu_'+last_cp.split('/')[-1])
 
 if __name__ == '__main__':
 	start_training()
