@@ -356,7 +356,7 @@ def train(epoch):
 
 		optimizer.step()
 		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}'.format(
-			epoch, batch_idx * len(dataloader), (len(dataloader)*64),
+			epoch, batch_idx * batch_size, (len(dataloader)*batch_size),
 			100. * batch_idx / len(dataloader),
 			recon_loss.data[0] / len(dataloader)))
 
@@ -401,7 +401,7 @@ def test(epoch):
 		# z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
 		# z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
 
-		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
+		recon_batch_dp0, z_dp0 = model(dp0_img)
 		recon_test_loss += recon_loss_func(recon_batch_dp0, dp0_img).data[0]
 
 		#calc siamese loss
@@ -512,7 +512,7 @@ def start_training():
 	start_epoch = 0
 
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
-		recon_train_loss, siamese_train_loss = train(epoch)
+		recon_train_loss = train(epoch)
 		test_loss = test(epoch)
 		# torch.save(model.state_dict(), '../models/Epoch_{}_Train_loss_{:.4f}_Test_loss_{:.4f}.pth'.format(epoch, train_loss, test_loss))
 
