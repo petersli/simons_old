@@ -217,7 +217,7 @@ class AE(nn.Module):
 			nn.ReLU(True),
 			nn.ConvTranspose2d(16, 8, 3, stride=3, padding=1),
 			nn.ReLU(True),
-			nn.ConvTranspose2d(8, 3, 3, stride=3, padding=1),
+			nn.ConvTranspose2d(8, 3, 3, stride=1, padding=1),
 			nn.Tanh()
 		)
 
