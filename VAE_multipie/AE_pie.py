@@ -355,11 +355,10 @@ def train(epoch):
 
 
 		optimizer.step()
-		if batch_idx % args.log_interval == 0:
-			print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}'.format(
-				epoch, batch_idx * len(data), (len(train_loader)*64),
-				100. * batch_idx / len(train_loader),
-				recon_loss.data[0] / len(data_loader)))
+		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}'.format(
+			epoch, batch_idx * len(data), (len(train_loader)*64),
+			100. * batch_idx / len(train_loader),
+			recon_loss.data[0] / len(data_loader)))
 
 	print('====> Epoch: {} Average recon loss: {:.4f}'.format(
 		  epoch, recon_train_loss / (len(data_loader)*64)))
