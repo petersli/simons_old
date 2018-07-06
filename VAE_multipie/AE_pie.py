@@ -204,7 +204,7 @@ class AE(nn.Module):
 	def __init__(self):
 		super(AE, self).__init__()
 		self.encoder = nn.Sequential(
-			nn.Conv2d(1, 16, 3, stride=3, padding=1), #in_channels, out_channels, kernel_size, stride, padding
+			nn.Conv2d(3, 16, 3, stride=3, padding=1), #in_channels, out_channels, kernel_size, stride, padding
 			nn.ReLU(True), #True means do in-place
 			nn.MaxPool2d(2, stride=2), #kernel_size, stride
 			nn.Conv2d(16, 8, 3, stride=2, padding=1),
@@ -217,7 +217,7 @@ class AE(nn.Module):
 			nn.ReLU(True),
 			nn.ConvTranspose2d(16, 8, 3, stride=3, padding=1),
 			nn.ReLU(True),
-			nn.ConvTranspose2d(8, 1, 2, stride=2, padding=1),
+			nn.ConvTranspose2d(8, 3, 2, stride=2, padding=1),
 			nn.Tanh()
 		)
 
