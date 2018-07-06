@@ -69,7 +69,7 @@ parser.add_argument('--dirCheckpoints', default='.', help='folder to model check
 parser.add_argument('--dirImageoutput', default='.', help='folder to output images')
 parser.add_argument('--dirTestingoutput', default='.', help='folder to testing results/images')
 parser.add_argument('--manualSeed', type=int, help='manual seed')
-parser.add_argument('--epoch_iter', type=int,default=200, help='number of epochs on entire dataset')
+parser.add_argument('--epoch_iter', type=int,default=40, help='number of epochs on entire dataset')
 parser.add_argument('--location', type = int, default=0, help ='where is the code running')
 parser.add_argument('-f',type=str,default= '', help='dummy input required for jupyter notebook')
 opt = parser.parse_args()
@@ -205,29 +205,25 @@ class AE(nn.Module):
 		super(AE, self).__init__()
 		self.encoder = nn.Sequential(
 			nn.Conv2d(3, 16, 3, stride=3, padding=1), #in_channels, out_channels, kernel_size, stride, padding
-			nn.ReLU(True), #True means do in-place
+			nn.BatchNorm2d(16)
+			nn.ReLU(True), #True = do in-place
 			nn.MaxPool2d(2, stride=2), #kernel_size, stride
 			nn.Conv2d(16, 8, 3, stride=2, padding=1),
+			nn.BatchNorm2d(8)
 			nn.ReLU(True),
 			nn.MaxPool2d(2, stride=1)
 		)
 
 		self.decoder = nn.Sequential(
 			nn.ConvTranspose2d(8, 16, 3, stride=2), #in_channels, out_channels, kernel_size, stride, padding
+			nn.BatchNorm2d(16)
 			nn.ReLU(True),
 			nn.ConvTranspose2d(16, 8, 3, stride=2, padding=1),
+			nn.BatchNorm2d(8)
 			nn.ReLU(True),
 			nn.ConvTranspose2d(8, 3, 6, stride=3, padding=1),
-			nn.Tanh()
+			nn.Sigmoid()
 		)
-
-		# #encoder
-		# self.e1 = nn.Conv2d(1, 16, 3, stride=3, padding=1) #in_channels, out_channels, kernel_size, stride, padding
-		# self.rl1 = nn.ReLU(True) #True means do in-place
-		# self.p1 = nn.MaxPool2d(2, stride=2) #kernel_size, stride
-		# self.e2 = nn.Conv2d(16, 8, 3, stride=2, padding=1)
-		# self.rl2 = nn.ReLU(True)
-		# self.p2 = nn.MaxPool2d(2, stride=1)
 
  
 		# self.nc = nc # num channels
@@ -328,7 +324,6 @@ class AE(nn.Module):
 		# recon_x = self.decode(z)
 		# return recon_x, z
 		z = self.encoder(x)
-		print(z.size())
 		recon_x = self.decoder(z)
 		return recon_x, z
 
