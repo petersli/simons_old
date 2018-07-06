@@ -265,7 +265,7 @@ class AE(nn.Module):
 		h3 = self.leakyrelu(self.bn3(self.e3(h2)))
 		h4 = self.leakyrelu(self.bn4(self.e4(h3)))
 		h5 = self.leakyrelu(self.bn5(self.e5(h4)))
-		h5 = h5.view(-1, self.ndf*8*4*4*2)
+		# h5 = h5.view(-1, self.ndf*8*4*4*2)
 
 		return self.fc1(h5)
 		#return self.bn5(self.e5(h4))
@@ -273,7 +273,7 @@ class AE(nn.Module):
 	def decode(self, z):
 		#print("decode")
 		h1 = self.relu(self.d1(z))
-		h1 = h1.view(-1, self.ngf*8*2, 2, 2)
+		# h1 = h1.view(-1, self.ngf*8*2, 2, 2)
 		h2 = self.leakyrelu(self.bn6(self.d2(self.pd1(self.up1(h1)))))
 		h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
 		h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h3)))))
@@ -290,7 +290,7 @@ class AE(nn.Module):
 		return z
 
 	def forward(self, x):
-		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf))
+		z = self.encode(x)
 		recon_x = self.decode(z)
 		return recon_x, z
 
