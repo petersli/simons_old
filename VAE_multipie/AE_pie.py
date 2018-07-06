@@ -79,10 +79,10 @@ print(opt)
 opt.data_dir_prefix = '/nfs/bigdisk/zhshu/data/fare/'
 
 ## change the output directory to your own
-opt.output_dir_prefix = '/home/peterli/simons/VAE_multipie'
-opt.dirCheckpoints	= opt.output_dir_prefix + '/checkpoints/AE'
-opt.dirImageoutput	= opt.output_dir_prefix + '/images/AE'
-opt.dirTestingoutput  = opt.output_dir_prefix + '/testing/AE'
+opt.output_dir_prefix = '/home/peterli/simons/VAE_multipie/AE'
+opt.dirCheckpoints	= opt.output_dir_prefix + '/checkpoints'
+opt.dirImageoutput	= opt.output_dir_prefix + '/images'
+opt.dirTestingoutput  = opt.output_dir_prefix + '/testing'
 
 opt.imgSize = 64
 
