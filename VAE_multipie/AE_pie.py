@@ -361,23 +361,23 @@ def train(epoch):
 			recon_loss.data[0] / len(dataloader)))
 
 	print('====> Epoch: {} Average recon loss: {:.4f}'.format(
-		  epoch, recon_train_loss / (len(dataloader)*64)))
+		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize)))
 
 	print(dp0_img.size())
 	print(dp9_img.size())
 	print(dp1_img.size())
 	visualizeAsImages(dp0_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='iter_'+str(iter_mark)+'_img0', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_img0', n_sample = 25, nrow=5, normalize=False)
 	visualizeAsImages(dp9_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='iter_'+str(iter_mark)+'_img9', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_img9', n_sample = 25, nrow=5, normalize=False)
 	visualizeAsImages(dp1_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='iter_'+str(iter_mark)+'_img1', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_img1', n_sample = 25, nrow=5, normalize=False)
 	print('Test image saved, kill the process by Ctrl + C')
 
-	return recon_train_loss / (len(dataloader)*64)
+	return recon_train_loss / (len(dataloader) * opt.batchSize)
 
 def test(epoch):
 	print("test")
