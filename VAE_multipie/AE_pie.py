@@ -283,17 +283,16 @@ class AE(nn.Module):
 
 	def get_latent_vectors(self, x):
 		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # whole latent vector
-		print("pre slice {}".format(z.size()))
-		#z = z.view(1, 128)
-		z_per = z[0:64] # part of z repesenenting identity of the person
-		z_exp = z[64:]  # part of z representing the expression
-		print("post slice {}".format(z.size()))
-		return z, z_per, z_exp
+		#print("pre slice {}".format(z.size()))
+		# z_per = z[0:64] # part of z repesenenting identity of the person
+		# z_exp = z[64:]  # part of z representing the expression
+		#print("post slice {}".format(z.size()))
+		return z
 
 	def forward(self, x):
-		z, z_per, z_exp = model.get_latent_vectors(x.view(-1, self.nc, self.ndf, self.ngf))
+		z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf))
 		recon_x = self.decode(z)
-		return recon_x, z, z_per, z_exp
+		return recon_x, z
 
 
 model = AE(nc=3, ngf=64, ndf=64, latent_variable_size=128)
@@ -335,7 +334,7 @@ def train(epoch):
 		# z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
 		# z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
 
-		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
+		recon_batch_dp0, z_dp0 = model(dp0_img)
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 
 		optimizer.zero_grad()
