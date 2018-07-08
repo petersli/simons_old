@@ -201,84 +201,106 @@ TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01
 
 
 class AE(nn.Module):
-	def __init__(self):
+	def __init__(self, latent_variable_size):
 		super(AE, self).__init__()
-		self.encoder = nn.Sequential(
-			nn.Conv2d(3, 16, 3, stride=3, padding=1), #in_channels, out_channels, kernel_size, stride, padding
-			nn.BatchNorm2d(16),
-			nn.ReLU(True), #True = do in-place
-			nn.MaxPool2d(2, stride=2), #kernel_size, stride
-			nn.Conv2d(16, 8, 3, stride=2, padding=1),
-			nn.BatchNorm2d(8),
-			nn.ReLU(True),
-			nn.MaxPool2d(2, stride=1)
-		)
+		self.latent_variable_size = latent_variable_size
 
-		self.decoder = nn.Sequential(
-			nn.ConvTranspose2d(8, 16, 3, stride=2), #in_channels, out_channels, kernel_size, stride, padding
-			nn.BatchNorm2d(16),
-			nn.ReLU(True),
-			nn.ConvTranspose2d(16, 8, 3, stride=2, padding=1),
-			nn.BatchNorm2d(8),
-			nn.ReLU(True),
-			nn.ConvTranspose2d(8, 3, 6, stride=3, padding=1),
-			nn.Sigmoid()
-		)
+		# ENCODER
 
- 
-		# self.nc = nc # num channels
-		# self.ngf = ngf # num generator filters
-		# self.ndf = ndf # num discriminator filters
-		# self.latent_variable_size = latent_variable_size
+		# img: 64 x 64 
 
-		# # encoder
-		# self.e1 = nn.Conv2d(nc, ndf, 4, 2, 1)
-		# self.bn1 = nn.BatchNorm2d(ndf)
+		self.e1 = nn.Conv2d(in_channels=3, out_channels=8, kernel_size=4, stride=2, padding=1)
+		self.bn1 = nn.BatchNorm2d(8)
 
-		# self.e2 = nn.Conv2d(ndf, ndf*2, 4, 2, 1)
-		# self.bn2 = nn.BatchNorm2d(ndf*2)
+		# 32 x 32 
 
-		# self.e3 = nn.Conv2d(ndf*2, ndf*4, 4, 2, 1)
-		# self.bn3 = nn.BatchNorm2d(ndf*4)
+		self.e2 = nn.Conv2d(8, 16, 4, 2, 1)
+		self.bn2 = nn.BatchNorm2d(16)
 
-		# self.e4 = nn.Conv2d(ndf*4, ndf*8, 4, 2, 1)
-		# self.bn4 = nn.BatchNorm2d(ndf*8)
+		# 16 x 16
 
-		# self.e5 = nn.Conv2d(ndf*8, ndf*8, 4, 2, 1)
-		# self.bn5 = nn.BatchNorm2d(ndf*8)
+		self.e3 = nn.Conv2d(16, 32, 4, 2, 1)
+		self.bn3 = nn.BatchNorm2d(32)
 
-		# self.fc1 = nn.Linear(ndf*8*4*4, latent_variable_size) #if ndf=64, args are (8192, 128)
+		# 8 x 8
 
-		# # decoder
-		# self.d1 = nn.Linear(latent_variable_size, ngf*8*4*4*2)
+		self.e4 = nn.Conv2d(32, 64, 4, 2, 1)
+		self.bn4 = nn.BatchNorm2d(64)
 
-		# self.up1 = nn.Upsample(scale_factor=2)
-		# self.pd1 = nn.ReplicationPad2d(1)
-		# self.d2 = nn.Conv2d(ngf*8*2, ngf*8, 3, 1)
-		# self.bn6 = nn.BatchNorm2d(ngf*8, 1.e-3)
+		# 4 x 4
 
-		# self.up2 = nn.Upsample(scale_factor=2)
-		# self.pd2 = nn.ReplicationPad2d(1)
-		# self.d3 = nn.Conv2d(ngf*8, ngf*4, 3, 1)
-		# self.bn7 = nn.BatchNorm2d(ngf*4, 1.e-3)
+		self.fc1 = nn.Linear(64*4*4, latent_variable_size)
 
-		# self.up3 = nn.Upsample(scale_factor=2)
-		# self.pd3 = nn.ReplicationPad2d(1)
-		# self.d4 = nn.Conv2d(ngf*4, ngf*2, 3, 1)
-		# self.bn8 = nn.BatchNorm2d(ngf*2, 1.e-3)
+		# batch_size x latent_variable_size (100 x 128)
 
-		# self.up4 = nn.Upsample(scale_factor=2)
-		# self.pd4 = nn.ReplicationPad2d(1)
-		# self.d5 = nn.Conv2d(ngf*2, ngf, 3, 1)
-		# self.bn9 = nn.BatchNorm2d(ngf, 1.e-3)
+		# DECODER
 
-		# self.up5 = nn.Upsample(scale_factor=2)
-		# self.pd5 = nn.ReplicationPad2d(1)
-		# self.d6 = nn.Conv2d(ngf, nc, 3, 1)
+		self.d1 = nn.Linear(latent_variable_size, 64*2*4*4)
 
-		# self.leakyrelu = nn.LeakyReLU(0.2)
-		# self.relu = nn.ReLU()
-		# self.sigmoid = nn.Sigmoid()
+		# 2 x 2
+
+		self.up1 = nn.Upsample(scale_factor=2)
+		self.pd1 = nn.ReplicationPad2d(1) # +2 to height/width
+		self.d2 = nn.Conv2d(64*2, 64, kernel_size=3, stride=1)  # -2 to height/width
+		self.bn6 = nn.BatchNorm2d(64, eps=1.e-3) 
+		# eps is added to denominator for numerical stability
+
+		# 4 x 4
+
+		self.up2 = nn.Upsample(scale_factor=2)
+        self.pd2 = nn.ReplicationPad2d(1)
+        self.d3 = nn.Conv2d(64, 32, 3, 1)
+        self.bn7 = nn.BatchNorm2d(32, 1.e-3)
+
+     	# 8 x 8
+
+        self.up3 = nn.Upsample(scale_factor=2)
+        self.pd3 = nn.ReplicationPad2d(1)
+        self.d4 = nn.Conv2d(32, 16, 3, 1)
+        self.bn8 = nn.BatchNorm2d(16, 1.e-3)
+
+        # 16 x 16
+
+        self.up4 = nn.Upsample(scale_factor=2)
+        self.pd4 = nn.ReplicationPad2d(1)
+        self.d5 = nn.Conv2d(16, 8, 3, 1)
+        self.bn9 = nn.BatchNorm2d(8, 1.e-3)
+
+        # 32 x 32
+
+        self.up5 = nn.Upsample(scale_factor=2)
+        self.pd5 = nn.ReplicationPad2d(1)
+        self.d6 = nn.Conv2d(8, 3, 3, 1)
+
+        self.leakyrelu = nn.LeakyReLU(0.2)
+        self.relu = nn.ReLU()
+        self.hardtanh = nn.Hardtanh()
+
+        # 64 x 64
+
+		########### my code below
+
+		# self.encoder = nn.Sequential(
+		# 	nn.Conv2d(3, 16, 3, stride=3, padding=1), #in_channels, out_channels, kernel_size, stride, padding
+		# 	nn.BatchNorm2d(16),
+		# 	nn.ReLU(True), #True = do in-place
+		# 	nn.MaxPool2d(2, stride=2), #kernel_size, stride
+		# 	nn.Conv2d(16, 8, 3, stride=2, padding=1),
+		# 	nn.BatchNorm2d(8),
+		# 	nn.ReLU(True),
+		# 	nn.MaxPool2d(2, stride=1)
+		# )
+
+		# self.decoder = nn.Sequential(
+		# 	nn.ConvTranspose2d(8, 16, 3, stride=2), #in_channels, out_channels, kernel_size, stride, padding
+		# 	nn.BatchNorm2d(16),
+		# 	nn.ReLU(True),
+		# 	nn.ConvTranspose2d(16, 8, 3, stride=2, padding=1),
+		# 	nn.BatchNorm2d(8),
+		# 	nn.ReLU(True),
+		# 	nn.ConvTranspose2d(8, 3, 6, stride=3, padding=1),
+		# 	nn.Sigmoid()
+		# )
 
 		
 
@@ -286,30 +308,27 @@ class AE(nn.Module):
 
 
 
-	# def encode(self, x):
-	# 	#print("encode")
-	# 	h1 = self.leakyrelu(self.bn1(self.e1(x)))
-	# 	h2 = self.leakyrelu(self.bn2(self.e2(h1)))
-	# 	h3 = self.leakyrelu(self.bn3(self.e3(h2)))
-	# 	h4 = self.leakyrelu(self.bn4(self.e4(h3)))
-	# 	h5 = self.leakyrelu(self.bn5(self.e5(h4)))
-	# 	h5 = h5.view(-1, self.ndf*8*4*4)
+	def encode(self, x):
+		#print("encode")
+		h1 = self.leakyrelu(self.bn1(self.e1(x)))
+		h2 = self.leakyrelu(self.bn2(self.e2(h1)))
+		h3 = self.leakyrelu(self.bn3(self.e3(h2)))
+		h4 = self.leakyrelu(self.bn4(self.e4(h3)))
+		h5 = self.leakyrelu(self.bn5(self.e5(h4)))
+		h5 = h5.view(-1, 64*4*4)
 
-	# 	return self.fc1(h5)
-	# 	#return self.bn5(self.e5(h4))
+		return self.fc1(h5)
 
+	def decode(self, z):
+		#print("decode")
+		h1 = self.relu(self.d1(z))
+		h1 = h1.view(-1, 64*2, 2, 2)
+		h2 = self.leakyrelu(self.bn6(self.d2(self.pd1(self.up1(h1)))))
+		h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
+		h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h3)))))
+		h5 = self.leakyrelu(self.bn9(self.d5(self.pd4(self.up4(h4)))))
 
-
-	# def decode(self, z):
-	# 	#print("decode")
-	# 	h1 = self.relu(self.d1(z))
-	# 	h1 = h1.view(-1, self.ngf*8*2, 2, 2)
-	# 	h2 = self.leakyrelu(self.bn6(self.d2(self.pd1(self.up1(h1)))))
-	# 	h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
-	# 	h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h3)))))
-	# 	h5 = self.leakyrelu(self.bn9(self.d5(self.pd4(self.up4(h4)))))
-
-	# 	return self.sigmoid(self.d6(self.pd5(self.up5(h5))))
+		return self.hardtanh(self.d6(self.pd5(self.up5(h5))))
 
 	# def get_latent_vectors(self, x):
 	# 	z = self.encode(x.view(-1, self.nc, self.ndf, self.ngf)) # whole latent vector
@@ -323,8 +342,8 @@ class AE(nn.Module):
 		# z = self.encode(x)
 		# recon_x = self.decode(z)
 		# return recon_x, z
-		z = self.encoder(x)
-		recon_x = self.decoder(z)
+		z = self.encode(x)
+		recon_x = self.decode(z)
 		return recon_x, z
 
 
@@ -554,7 +573,7 @@ if __name__ == '__main__':
 	start_training()
 	# last_model_to_cpu()
 	# load_last_model()
-	rand_faces(10)
+	# rand_faces(10)
 	# da = load_pickle(test_loader[0])
 	# da = da[:120]
 	# it = iter(da)
