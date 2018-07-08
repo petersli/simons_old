@@ -302,12 +302,6 @@ class AE(nn.Module):
 		# 	nn.Sigmoid()
 		# )
 
-		
-
-		
-
-
-
 	def encode(self, x):
 		#print("encode")
 		h1 = self.leakyrelu(self.bn1(self.e1(x)))
@@ -346,11 +340,7 @@ class AE(nn.Module):
 		recon_x = self.decode(z)
 		return recon_x, z
 
-
-
-
-#model = AE(nc=3, ngf=64, ndf=64, latent_variable_size=128)
-model=AE()
+model=AE(latent_variable_size=128)
 
 if opt.cuda:
 	 model.cuda()
