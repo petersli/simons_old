@@ -175,15 +175,19 @@ TestingData = []
 TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_select_test/')
 
 
-class waspSlicer(nn.Module):
-   def __init__(self, opt, ngpu=1, pstart = 0, pend=1):
-       super(waspSlicer, self).__init__()
-       self.ngpu = ngpu
-       self.pstart = pstart
-       self.pend = pend
-   def forward(self, input):
-       output = input[:,self.pstart:self.pend].contiguous()
-       return output
+# class waspSlicer(nn.Module):
+#    def __init__(self, opt, ngpu=1, pstart = 0, pend=1):
+#        super(waspSlicer, self).__init__()
+#        self.ngpu = ngpu
+#        self.pstart = pstart
+#        self.pend = pend
+#    def forward(self, input):
+#        output = input[:,self.pstart:self.pend].contiguous() 
+#        return output
+
+# slice1 = waspSlicer(opt, pstart=0, pend=64)
+# slice2 = waspSlicer(opt, pstart=64, pend=128)
+
 
 class AE(nn.Module):
 	def __init__(self, latent_variable_size):
@@ -290,13 +294,10 @@ class AE(nn.Module):
 
 		return self.hardtanh(self.d6(self.pd5(self.up5(h5))))
 
-	slice1 = waspSlicer(opt, pstart=0, pend=64)
-	slice2 = waspSlicer(opt, pstart=64, pend=128)
-
 	def get_latent_vectors(self, x):
 		z = self.encode(x) # whole latent vector
-		z_per = slice1(z) # part of z repesenenting identity of the person
-		z_exp = slice2(z)  # part of z representing the expression
+		z_per = z[:,0:64].contiguous() # part of z repesenenting identity of the person
+		z_exp = z[:,64:128].contiguous()  # part of z representing the expression
 		return z, z_per, z_exp
 
 	def forward(self, x):
