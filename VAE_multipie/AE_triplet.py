@@ -366,21 +366,22 @@ def train(epoch):
 		siamese_loss = sim_loss + dis_loss
 
 		siamese_loss.backward()
-		siamese_train_loss = siamese_loss.data[0].item()
+		siamese_train_loss += siamese_loss.data[0].item()
 
 	   
 
 
 		optimizer.step()
-		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tReconLoss: {:.6f}\tSiameseLoss: {:.6f}'.format(
+		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tReconLoss: {:.6f}\tSimLoss: {:.6f}\tDisLoss: {:.6f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
 			100. * batch_idx / len(dataloader),
-			recon_loss.data[0].item() / opt.batchSize, siamese_loss.data[0].item() / opt.batchSize))
+			recon_loss.data[0].item() / opt.batchSize, sim_loss.data[0].item() / opt.batchSize, dis_loss.data[0].item() / opt.batchSize))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
 		file = open("losses.txt", "w")
 		file.write('Epoch: {} Recon: {:.4f}\n'.format(epoch, recon_loss.data[0].item() / opt.batchSize))
-		file.write('Epoch: {} Siamese: {:.4f}\n'.format(epoch, siamese_loss.data[0].item() / opt.batchSize))
+		file.write('Epoch: {} SiameseSim: {:.4f} SiameseDis: {:.4f}\n'.format(epoch, sim_loss.data[0].item() / opt.batchSize,
+		 dis_loss.data[0].item() / opt.batchSize))
 		file.close()
 
 	print('====> Epoch: {} Average recon loss: {:.4f} Average siamese loss: {:.4f}'.format(
