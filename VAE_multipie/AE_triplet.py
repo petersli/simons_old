@@ -321,15 +321,19 @@ def siamese_loss_func(z1, z2, label):
 	siamese_func.size_average = False
 	siamese_func.margin = 0.5
 	y = torch.ones_like(z2)
-	print(z1.size())
-	print(z2.size())
-	print(y.size())
+
 	#size of target has to match size of inputs
 	y.requires_grad_(False)
 	if label == 1: # measure similarity
+		print(z1.size())
+		print(z2.size())
+		print(y.size())
 		return siamese_func(z1, z2, target=y)
 	elif label == -1: # measure dissimilarity
 		y = y * -1
+		print(z1.size())
+		print(z2.size())
+		print(y.size())
 		return siamese_func(z1, z2, target=y)
 
 
