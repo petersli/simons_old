@@ -315,7 +315,7 @@ class AE(nn.Module):
 		h3 = self.leakyrelu(self.bn3(self.e3(h2)))
 		h4 = self.leakyrelu(self.bn4(self.e4(h3)))
 		h5 = self.leakyrelu(self.bn5(self.e5(h4)))
-		h5 = h5.view(-1, 64*4*4)
+		h5 = h5.view(-1, 64*2*2)
 
 		return self.fc1(h5)
 
