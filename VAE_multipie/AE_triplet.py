@@ -293,6 +293,17 @@ class AE(nn.Module):
 		return recon_x, z, z_per, z_exp
 
 model=AE(latent_variable_size=128)
+
+class waspSlicer(nn.Module):
+   def __init__(self, opt, ngpu=1, pstart = 0, pend=1):
+       super(waspSlicer, self).__init__()
+       self.ngpu = ngpu
+       self.pstart = pstart
+       self.pend = pend
+   def forward(self, input):
+       output = input[:,self.pstart:self.pend].contiguous()
+       return output
+       
 slicer = waspSlicer()
 
 if opt.cuda:
@@ -510,12 +521,3 @@ if __name__ == '__main__':
 	# # latent_space_transition(l)
 	# perform_latent_space_arithmatics(l)
 
-class waspSlicer(nn.Module):
-   def __init__(self, opt, ngpu=1, pstart = 0, pend=1):
-       super(waspSlicer, self).__init__()
-       self.ngpu = ngpu
-       self.pstart = pstart
-       self.pend = pend
-   def forward(self, input):
-       output = input[:,self.pstart:self.pend].contiguous()
-       return output
