@@ -488,7 +488,6 @@ def start_training():
 
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
 		recon_loss, siamese_loss = train(epoch)
-		test(epoch)
 		torch.save(model.state_dict(),
 		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_Siamese_{:.4f}.pth'.format(epoch, recon_loss, siamese_loss))
 		if epoch % 10 == 0:
