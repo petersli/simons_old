@@ -28,30 +28,6 @@ import math
 import MultipieLoader
 import gc
 
-# parser = argparse.ArgumentParser(description='PyTorch VAE')
-# parser.add_argument('--batch-size', type=int, default=64, metavar='N',
-#					 help='input batch size for training (default: 64)')
-# parser.add_argument('--epochs', type=int, default=20, metavar='N',
-#					 help='number of epochs to train (default: 20)')
-# parser.add_argument('--no-cuda', action='store_true', default=False,
-#					 help='enables CUDA training')
-# parser.add_argument('--seed', type=int, default=1, metavar='S',
-#					 help='random seed (default: 1)')
-# parser.add_argument('--log-interval', type=int, default=1, metavar='N',
-#					 help='how many batches to wait before logging training status')
-# args = parser.parse_args()
-# # args = parser.parse_args(args=[])  --for ipynb
-# args.cuda = not args.no_cuda and torch.cuda.is_available()
-
-
-
-# torch.manual_seed(args.seed)
-# if args.cuda:
-#	 torch.cuda.manual_seed(args.seed)
-
-# kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=8)
 parser.add_argument('--batchSize', type=int, default=100, help='input batch size')
@@ -201,123 +177,122 @@ TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01
 
 
 class AE(nn.Module):
-	def __init__(self):
+	def __init__(self, latent_variable_size):
 		super(AE, self).__init__()
-		self.encoder = nn.Sequential(
-			nn.Conv2d(3, 16, 3, stride=3, padding=1), #in_channels, out_channels, kernel_size, stride, padding
-			nn.BatchNorm2d(16),
-			nn.ReLU(True), #True = do in-place
-			nn.MaxPool2d(2, stride=2), #kernel_size, stride
-			nn.Conv2d(16, 8, 3, stride=2, padding=1),
-			nn.BatchNorm2d(8),
-			nn.ReLU(True),
-			nn.MaxPool2d(2, stride=1)
-			# latent vector is [100 x 8 x 5 x 5] right now
-		)
+		self.latent_variable_size = latent_variable_size
 
-		self.decoder = nn.Sequential(
-			nn.ConvTranspose2d(8, 16, 3, stride=2), #in_channels, out_channels, kernel_size, stride, padding
-			nn.BatchNorm2d(16),
-			nn.ReLU(True),
-			nn.ConvTranspose2d(16, 8, 3, stride=2, padding=1),
-			nn.BatchNorm2d(8),
-			nn.ReLU(True),
-			nn.ConvTranspose2d(8, 3, 6, stride=3, padding=1),
-			nn.Sigmoid()
-		)
+		# ENCODER
 
- 
-		# self.nc = nc # num channels
-		# self.ngf = ngf # num generator filters
-		# self.ndf = ndf # num discriminator filters
-		# self.latent_variable_size = latent_variable_size
+		# img: 64 x 64 
 
-		# # encoder
-		# self.e1 = nn.Conv2d(nc, ndf, 4, 2, 1)
-		# self.bn1 = nn.BatchNorm2d(ndf)
+		self.e1 = nn.Conv2d(in_channels=3, out_channels=8, kernel_size=4, stride=2, padding=1)
+		self.bn1 = nn.BatchNorm2d(8)
 
-		# self.e2 = nn.Conv2d(ndf, ndf*2, 4, 2, 1)
-		# self.bn2 = nn.BatchNorm2d(ndf*2)
+		# 32 x 32 
 
-		# self.e3 = nn.Conv2d(ndf*2, ndf*4, 4, 2, 1)
-		# self.bn3 = nn.BatchNorm2d(ndf*4)
+		self.e2 = nn.Conv2d(8, 16, 4, 2, 1)
+		self.bn2 = nn.BatchNorm2d(16)
 
-		# self.e4 = nn.Conv2d(ndf*4, ndf*8, 4, 2, 1)
-		# self.bn4 = nn.BatchNorm2d(ndf*8)
+		# 16 x 16
 
-		# self.e5 = nn.Conv2d(ndf*8, ndf*8, 4, 2, 1)
-		# self.bn5 = nn.BatchNorm2d(ndf*8)
+		self.e3 = nn.Conv2d(16, 32, 4, 2, 1)
+		self.bn3 = nn.BatchNorm2d(32)
 
-		# self.fc1 = nn.Linear(ndf*8*4*4, latent_variable_size) #if ndf=64, args are (8192, 128)
+		# 8 x 8
 
-		# # decoder
-		# self.d1 = nn.Linear(latent_variable_size, ngf*8*4*4*2)
+		self.e4 = nn.Conv2d(32, 64, 4, 2, 1)
+		self.bn4 = nn.BatchNorm2d(64)
 
-		# self.up1 = nn.Upsample(scale_factor=2)
-		# self.pd1 = nn.ReplicationPad2d(1)
-		# self.d2 = nn.Conv2d(ngf*8*2, ngf*8, 3, 1)
-		# self.bn6 = nn.BatchNorm2d(ngf*8, 1.e-3)
+		# 4 x 4
 
-		# self.up2 = nn.Upsample(scale_factor=2)
-		# self.pd2 = nn.ReplicationPad2d(1)
-		# self.d3 = nn.Conv2d(ngf*8, ngf*4, 3, 1)
-		# self.bn7 = nn.BatchNorm2d(ngf*4, 1.e-3)
+		self.e5 = nn.Conv2d(64, 64, 4, 2, 1)
+		self.bn5 = nn.BatchNorm2d(64)
 
-		# self.up3 = nn.Upsample(scale_factor=2)
-		# self.pd3 = nn.ReplicationPad2d(1)
-		# self.d4 = nn.Conv2d(ngf*4, ngf*2, 3, 1)
-		# self.bn8 = nn.BatchNorm2d(ngf*2, 1.e-3)
+		# 2 x 2
 
-		# self.up4 = nn.Upsample(scale_factor=2)
-		# self.pd4 = nn.ReplicationPad2d(1)
-		# self.d5 = nn.Conv2d(ngf*2, ngf, 3, 1)
-		# self.bn9 = nn.BatchNorm2d(ngf, 1.e-3)
+		self.fc1 = nn.Linear(64*2*2, latent_variable_size)
 
-		# self.up5 = nn.Upsample(scale_factor=2)
-		# self.pd5 = nn.ReplicationPad2d(1)
-		# self.d6 = nn.Conv2d(ngf, nc, 3, 1)
+		# batch_size x latent_variable_size (100 x 128)
 
-		# self.leakyrelu = nn.LeakyReLU(0.2)
-		# self.relu = nn.ReLU()
-		# self.sigmoid = nn.Sigmoid()
+		# DECODER
 
-	# def encode(self, x):
-	# 	#print("encode")
-	# 	h1 = self.leakyrelu(self.bn1(self.e1(x)))
-	# 	h2 = self.leakyrelu(self.bn2(self.e2(h1)))
-	# 	h3 = self.leakyrelu(self.bn3(self.e3(h2)))
-	# 	h4 = self.leakyrelu(self.bn4(self.e4(h3)))
-	# 	h5 = self.leakyrelu(self.bn5(self.e5(h4)))
-	# 	h5 = h5.view(-1, self.ndf*8*4*4)
+		self.d1 = nn.Linear(latent_variable_size, 64*2*2*2)
 
-	# 	return self.fc1(h5)
-	# 	#return self.bn5(self.e5(h4))
+		# 2 x 2
 
+		self.up1 = nn.Upsample(scale_factor=2) # removes the *2*2 from output of d1 b/c scale_factor scales both H and W
+		self.pd1 = nn.ReplicationPad2d(1) # +2 to height/width
+		self.d2 = nn.Conv2d(64*2, 64, kernel_size=3, stride=1)  # -2 to height/width
+		self.bn6 = nn.BatchNorm2d(64, eps=1.e-3) 
+		# eps is added to denominator for numerical stability
 
+		# 4 x 4
 
-	# def decode(self, z):
-	# 	#print("decode")
-	# 	h1 = self.relu(self.d1(z))
-	# 	h1 = h1.view(-1, self.ngf*8*2, 2, 2)
-	# 	h2 = self.leakyrelu(self.bn6(self.d2(self.pd1(self.up1(h1)))))
-	# 	h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
-	# 	h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h3)))))
-	# 	h5 = self.leakyrelu(self.bn9(self.d5(self.pd4(self.up4(h4)))))
+		self.up2 = nn.Upsample(scale_factor=2)
+		self.pd2 = nn.ReplicationPad2d(1)
+		self.d3 = nn.Conv2d(64, 32, 3, 1)
+		self.bn7 = nn.BatchNorm2d(32, 1.e-3)
 
-	# 	return self.sigmoid(self.d6(self.pd5(self.up5(h5))))
+	 	# 8 x 8
+
+		self.up3 = nn.Upsample(scale_factor=2)
+		self.pd3 = nn.ReplicationPad2d(1)
+		self.d4 = nn.Conv2d(32, 16, 3, 1)
+		self.bn8 = nn.BatchNorm2d(16, 1.e-3)
+
+		# 16 x 16
+
+		self.up4 = nn.Upsample(scale_factor=2)
+		self.pd4 = nn.ReplicationPad2d(1)
+		self.d5 = nn.Conv2d(16, 8, 3, 1)
+		self.bn9 = nn.BatchNorm2d(8, 1.e-3)
+
+		# 32 x 32
+
+		self.up5 = nn.Upsample(scale_factor=2)
+		self.pd5 = nn.ReplicationPad2d(1)
+		self.d6 = nn.Conv2d(8, 3, 3, 1)
+
+		# 64 x 64
+
+		self.leakyrelu = nn.LeakyReLU(0.2)
+		self.relu = nn.ReLU()
+		self.hardtanh = nn.Hardtanh()
+
+ 	def encode(self, x):
+		#print("encode")
+		h1 = self.leakyrelu(self.bn1(self.e1(x)))
+		h2 = self.leakyrelu(self.bn2(self.e2(h1)))
+		h3 = self.leakyrelu(self.bn3(self.e3(h2)))
+		h4 = self.leakyrelu(self.bn4(self.e4(h3)))
+		h5 = self.leakyrelu(self.bn5(self.e5(h4)))
+		h5 = h5.view(-1, 64*2*2)
+
+		return self.fc1(h5)
+
+	def decode(self, z):
+		#print("decode")
+		h1 = self.relu(self.d1(z))
+		h1 = h1.view(-1, 64*2, 2, 2)
+		h2 = self.leakyrelu(self.bn6(self.d2(self.pd1(self.up1(h1)))))
+		h3 = self.leakyrelu(self.bn7(self.d3(self.pd2(self.up2(h2)))))
+		h4 = self.leakyrelu(self.bn8(self.d4(self.pd3(self.up3(h3)))))
+		h5 = self.leakyrelu(self.bn9(self.d5(self.pd4(self.up4(h4)))))
+
+		return self.hardtanh(self.d6(self.pd5(self.up5(h5))))
 
 	def get_latent_vectors(self, x):
-		z = self.encoder(x) # whole latent vector
+		z = self.encode(x) # whole latent vector
 		z_per = slicer(z, pstart=0, pend=64) # part of z repesenenting identity of the person
 		z_exp = slicer(z, pstart=64, pend=128)  # part of z representing the expression
 		return z, z_per, z_exp
 
 	def forward(self, x):
 		z, z_per, z_exp = self.get_latent_vectors(x)
-		recon_x = self.decoder(z)
+		recon_x = self.decode(z)
 		return recon_x, z, z_per, z_exp
 
-model=AE()
+model=AE(latent_variable_size=128)
 slicer = waspSlicer()
 
 if opt.cuda:
@@ -367,9 +342,12 @@ def train(epoch):
 			dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
 		dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
-		optimizer.zero_grad()
+
 		z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
 		z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
+
+		optimizer.zero_grad()
+		model.zero_grad()
 
 		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
 
@@ -378,29 +356,30 @@ def train(epoch):
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_train_loss += recon_loss.data[0]
+		recon_train_loss += recon_loss.data[0].item()
 
 		# calc siamese loss
 
-		siamese_loss = siamese_loss_func(z_per_dp0, z_per_dp9, 1) + siamese_loss_func(z_exp_dp0, z_exp_dp1, 1)
-		siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp9, -1)
-		siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp1, -1)
+		sim_loss = siamese_loss_func(z_per_dp0, z_per_dp9, 1) + siamese_loss_func(z_exp_dp0, z_exp_dp1, 1) # similarity
+		dis_loss = siamese_loss_func(z_exp_dp0, z_exp_dp9, -1) + siamese_loss_func(z_per_dp0, z_per_dp1, -1) # dissimilarity
+		siamese_loss = sim_loss + dis_loss
 
-		optimizer.zero_grad()
 		siamese_loss.backward()
-		siamese_train_loss = siamese_loss.data[0]
+		siamese_train_loss = siamese_loss.data[0].item()
 
 	   
 
 
 		optimizer.step()
-		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}'.format(
+		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tReconLoss: {:.6f}\tSiameseLoss: {:.6f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
 			100. * batch_idx / len(dataloader),
-			recon_loss.data[0] / len(dataloader)))
+			recon_loss.data[0].item() / opt.batchSize, siamese_loss.data[0].item() / opt.batchSize))
+			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
 	print('====> Epoch: {} Average recon loss: {:.4f}'.format(
 		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize)))
+			#divide by (batch_size * num_batches) to get loss for the epoch
 
 	#data
 	visualizeAsImages(dp0_img.data.clone(), 
@@ -427,13 +406,13 @@ def train(epoch):
 
 	print('Data and reconstructions saved.')
 
-	return recon_train_loss / (len(dataloader) * opt.batchSize)
+	return recon_train_loss / (len(dataloader) * opt.batchSize), siamese_train_loss / (len(dataloader) * opt.batchSize)
 
 def test(epoch):
 	print("test")
 	model.eval()
 	recon_test_loss = 0
-	#siamese_test_loss = 0
+	siamese_test_loss = 0
 	dataroot = random.sample(TestingData,1)[0]
 
 	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
@@ -442,78 +421,58 @@ def test(epoch):
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
 	for batch_idx, data_point in enumerate(dataloader, 0):
 		gc.collect() # collect garbage
-		# sample the data points: 
-		# dp0_img: image of data point 0
-		# dp9_img: image of data point 9, which is different in ``expression'' compare to dp0
-		# dp1_img: image of data point 1, which is different in ``person'' compare to dp0
+
 		dp0_img, dp9_img, dp1_img = data_point
 		dp0_img, dp9_img, dp1_img = parseSampledDataTripletMultipie(dp0_img, dp9_img, dp1_img)
 		if opt.cuda:
 			dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
 		dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
-		# optimizer.zero_grad()
-		# z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
-		# z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
 
-		#dp0
-		recon_batch_dp0, z_dp0 = model(dp0_img)
+		z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
+		z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
+
+		optimizer.zero_grad()
+		model.zero_grad()
+
+		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
+
+		# test disentangling
+
+		z_per0_exp9 = torch.cat(z_per_dp0, z_exp_dp9, 1) # should be person 0 with expression 9
+		recon_per0_exp9 = decode(z_per0_exp9)
+
+		visualizeAsImages(recon_per0_exp9.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_per0_exp9', n_sample = 25, nrow=5, normalize=False)
+
+		z_per0_exp1 = torch.cat(z_per_dp0, z_exp_dp1, 1) # should look the same as dp0_img (exp1 and exp0 are the same)
+		recon_per0_exp1 = decode(z_per0_exp1)
+
+		visualizeAsImages(recon_per0_exp1.data.clone(), 
+		opt.dirImageoutput, 
+		filename='epoch_'+str(epoch)+'_per0_exp1', n_sample = 25, nrow=5, normalize=False)
+
+
+		# calc reconstruction loss (dp0 only)
+
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_test_loss += recon_loss.data[0]
+		recon_test_loss += recon_loss.data[0].item()
 
-		#dp9
-		recon_batch_dp9, z_dp9 = model(dp9_img)
-		recon_loss = recon_loss_func(recon_batch_dp9, dp9_img)
-		optimizer.zero_grad()
-		recon_loss.backward()
-		recon_test_loss += recon_loss.data[0]
+		# calc siamese loss
 
-		#dp1
-		recon_batch_dp1, z_dp1 = model(dp1_img)
-		recon_loss = recon_loss_func(recon_batch_dp1, dp1_img)
-		optimizer.zero_grad()
-		recon_loss.backward()
-		recon_test_loss += recon_loss.data[0]
+		sim_loss = siamese_loss_func(z_per_dp0, z_per_dp9, 1) + siamese_loss_func(z_exp_dp0, z_exp_dp1, 1) # similarity
+		dis_loss = siamese_loss_func(z_exp_dp0, z_exp_dp9, -1) + siamese_loss_func(z_per_dp0, z_per_dp1, -1) # dissimilarity
+		siamese_loss = sim_loss + dis_loss
 
-		#calc siamese loss
-
-		# siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp9, 1)
-		# siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp1, 1)
-		# siamese_loss += siamese_loss_func(z_exp_dp0, z_exp_dp9, -1)
-		# siamese_loss += siamese_loss_func(z_per_dp0, z_per_dp1, -1)
-
-		# siamese_test_loss = siamese_loss.data[0]
-
-	#data
-	visualizeAsImages(dp0_img.data.clone(), 
-		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img0', n_sample = 25, nrow=5, normalize=False)
-	visualizeAsImages(dp9_img.data.clone(), 
-		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img9', n_sample = 25, nrow=5, normalize=False)
-	visualizeAsImages(dp1_img.data.clone(), 
-		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img1', n_sample = 25, nrow=5, normalize=False)
-
-	#reconstructions
-	visualizeAsImages(recon_batch_dp0.data.clone(), 
-		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon0', n_sample = 25, nrow=5, normalize=False)
-	visualizeAsImages(recon_batch_dp9.data.clone(), 
-		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon9', n_sample = 25, nrow=5, normalize=False)
-	visualizeAsImages(recon_batch_dp1.data.clone(), 
-		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon1', n_sample = 25, nrow=5, normalize=False)
+		siamese_loss.backward()
+		siamese_test_loss = siamese_loss.data[0].item()
 
 
-
-	recon_test_loss /= (len(dataloader)*64)
-	#siamese_test_loss /= (len(dataloader)*64)
-	print('====> Test set recon loss: {:.4f}'.format(recon_test_loss))
-	return recon_test_loss
+	print('====> Test set recon loss: {:.4f}\tSiamese loss:  {:.4f}'.format(recon_test_loss / (opt.batchSize * len(dataloader)), 
+		siamese_test_loss / (opt.batchSize * len(dataloader))))
 
 
 def load_last_model():
@@ -528,9 +487,11 @@ def start_training():
 	start_epoch = 0
 
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
-		recon_train_loss = train(epoch)
-		test_loss = test(epoch)
-		torch.save(model.state_dict(), opt.dirCheckpoints + '/Epoch_{}_Train_loss_{:.4f}_Test_loss_{:.4f}.pth'.format(epoch, recon_train_loss, test_loss))
+		recon_loss, siamese_loss = train(epoch)
+		torch.save(model.state_dict(),
+		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_Siamese_{:.4f}.pth'.format(epoch, recon_loss, siamese_loss))
+		if epoch % 10 == 0:
+			test(epoch)
 
 def last_model_to_cpu():
 	_, last_cp = load_last_model()

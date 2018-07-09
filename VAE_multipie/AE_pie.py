@@ -390,7 +390,7 @@ def train(epoch):
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_train_loss += recon_loss.data[0]
+		recon_train_loss += recon_loss.data[0].item()
 
 
 		#dp9
@@ -398,14 +398,14 @@ def train(epoch):
 		recon_loss = recon_loss_func(recon_batch_dp9, dp9_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_train_loss += recon_loss.data[0]
+		recon_train_loss += recon_loss.data[0].item()
 
 		#dp1
 		recon_batch_dp1, z_dp1 = model(dp1_img)
 		recon_loss = recon_loss_func(recon_batch_dp1, dp1_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_train_loss += recon_loss.data[0]
+		recon_train_loss += recon_loss.data[0].item()
 
 		#calc siamese loss
 
@@ -424,10 +424,10 @@ def train(epoch):
 		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon Loss: {:.6f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
 			100. * batch_idx / len(dataloader),
-			recon_loss.data[0] / len(dataloader)))
+			recon_loss.data[0].item() / len(dataloader)))
 
 	print('====> Epoch: {} Average recon loss: {:.4f}'.format(
-		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize)))
+		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize * 3)))
 
 	#data
 	visualizeAsImages(dp0_img.data.clone(), 
@@ -454,7 +454,7 @@ def train(epoch):
 
 	print('Data and reconstructions saved.')
 
-	return recon_train_loss / (len(dataloader) * opt.batchSize)
+	return recon_train_loss / (len(dataloader) * opt.batchSize * 3)
 
 def test(epoch):
 	print("test")
@@ -541,7 +541,7 @@ def test(epoch):
 	recon_test_loss /= (len(dataloader)*64)
 	#siamese_test_loss /= (len(dataloader)*64)
 	print('====> Test set recon loss: {:.4f}'.format(recon_test_loss))
-	return recon_test_loss
+	return recon_test_loss / (len(dataloader) * opt.batchSize * 3)
 
 
 def load_last_model():
