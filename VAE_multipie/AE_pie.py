@@ -234,7 +234,7 @@ class AE(nn.Module):
 
 		# 2 x 2
 
-		self.fc1 = nn.Linear(64*4*4, latent_variable_size)
+		self.fc1 = nn.Linear(64*2*2, latent_variable_size)
 
 		# batch_size x latent_variable_size (100 x 128)
 
@@ -488,7 +488,7 @@ def test(epoch):
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_test_loss += recon_loss.data[0]
+		recon_test_loss += recon_loss.data[0].item()
 
 
 		#dp9
@@ -496,14 +496,14 @@ def test(epoch):
 		recon_loss = recon_loss_func(recon_batch_dp9, dp9_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_test_loss += recon_loss.data[0]
+		recon_test_loss += recon_loss.data[0].item()
 
 		#dp1
 		recon_batch_dp1, z_dp1 = model(dp1_img)
 		recon_loss = recon_loss_func(recon_batch_dp1, dp1_img)
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_test_loss += recon_loss.data[0]
+		recon_test_loss += recon_loss.data[0].item()
 
 		#calc siamese loss
 
