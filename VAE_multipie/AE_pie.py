@@ -234,7 +234,7 @@ class AE(nn.Module):
 
 		# 2 x 2
 
-		self.fc1 = nn.Linear(64*2*4*4, latent_variable_size)
+		self.fc1 = nn.Linear(64*4*4, latent_variable_size)
 
 		# batch_size x latent_variable_size (100 x 128)
 
