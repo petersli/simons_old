@@ -290,8 +290,8 @@ class AE(nn.Module):
 
 		return self.hardtanh(self.d6(self.pd5(self.up5(h5))))
 
-	slice1 = waspSlicer(pstart=0, pend=64)
-	slice2 = waspSlicer(pstart=64, pend=128)
+	slice1 = waspSlicer(opt, pstart=0, pend=64)
+	slice2 = waspSlicer(opt, pstart=64, pend=128)
 
 	def get_latent_vectors(self, x):
 		z = self.encode(x) # whole latent vector
