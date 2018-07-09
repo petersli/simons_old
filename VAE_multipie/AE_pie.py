@@ -248,35 +248,36 @@ class AE(nn.Module):
 		# 4 x 4
 
 		self.up2 = nn.Upsample(scale_factor=2)
-        self.pd2 = nn.ReplicationPad2d(1)
-        self.d3 = nn.Conv2d(64, 32, 3, 1)
-        self.bn7 = nn.BatchNorm2d(32, 1.e-3)
+		self.pd2 = nn.ReplicationPad2d(1)
+		self.d3 = nn.Conv2d(64, 32, 3, 1)
+		self.bn7 = nn.BatchNorm2d(32, 1.e-3)
 
-     	# 8 x 8
+	 	# 8 x 8
 
-        self.up3 = nn.Upsample(scale_factor=2)
-        self.pd3 = nn.ReplicationPad2d(1)
-        self.d4 = nn.Conv2d(32, 16, 3, 1)
-        self.bn8 = nn.BatchNorm2d(16, 1.e-3)
+		self.up3 = nn.Upsample(scale_factor=2)
+		self.pd3 = nn.ReplicationPad2d(1)
+		self.d4 = nn.Conv2d(32, 16, 3, 1)
+		self.bn8 = nn.BatchNorm2d(16, 1.e-3)
 
-        # 16 x 16
+		# 16 x 16
 
-        self.up4 = nn.Upsample(scale_factor=2)
-        self.pd4 = nn.ReplicationPad2d(1)
-        self.d5 = nn.Conv2d(16, 8, 3, 1)
-        self.bn9 = nn.BatchNorm2d(8, 1.e-3)
+		self.up4 = nn.Upsample(scale_factor=2)
+		self.pd4 = nn.ReplicationPad2d(1)
+		self.d5 = nn.Conv2d(16, 8, 3, 1)
+		self.bn9 = nn.BatchNorm2d(8, 1.e-3)
 
-        # 32 x 32
+		# 32 x 32
 
-        self.up5 = nn.Upsample(scale_factor=2)
-        self.pd5 = nn.ReplicationPad2d(1)
-        self.d6 = nn.Conv2d(8, 3, 3, 1)
+		self.up5 = nn.Upsample(scale_factor=2)
+		self.pd5 = nn.ReplicationPad2d(1)
+		self.d6 = nn.Conv2d(8, 3, 3, 1)
 
-        self.leakyrelu = nn.LeakyReLU(0.2)
-        self.relu = nn.ReLU()
-        self.hardtanh = nn.Hardtanh()
+		# 64 x 64
 
-        # 64 x 64
+		self.leakyrelu = nn.LeakyReLU(0.2)
+		self.relu = nn.ReLU()
+		self.hardtanh = nn.Hardtanh()
+
 
 		########### my code below
 
@@ -573,10 +574,10 @@ if __name__ == '__main__':
 
 class waspSlicer(nn.Module):
    def __init__(self, opt, ngpu=1, pstart = 0, pend=1):
-       super(waspSlicer, self).__init__()
-       self.ngpu = ngpu
-       self.pstart = pstart
-       self.pend = pend
+	   super(waspSlicer, self).__init__()
+	   self.ngpu = ngpu
+	   self.pstart = pstart
+	   self.pend = pend
    def forward(self, input):
-       output = input[:,self.pstart:self.pend].contiguous()
-       return output
+	   output = input[:,self.pstart:self.pend].contiguous()
+	   return output
