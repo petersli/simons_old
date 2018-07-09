@@ -175,6 +175,15 @@ TestingData = []
 TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_select_test/')
 
 
+class waspSlicer(nn.Module):
+   def __init__(self, opt, ngpu=1, pstart = 0, pend=1):
+       super(waspSlicer, self).__init__()
+       self.ngpu = ngpu
+       self.pstart = pstart
+       self.pend = pend
+   def forward(self, input):
+       output = input[:,self.pstart:self.pend].contiguous()
+       return output
 
 class AE(nn.Module):
 	def __init__(self, latent_variable_size):
@@ -283,8 +292,8 @@ class AE(nn.Module):
 
 	def get_latent_vectors(self, x):
 		z = self.encode(x) # whole latent vector
-		z_per = slicer(z, pstart=0, pend=64) # part of z repesenenting identity of the person
-		z_exp = slicer(z, pstart=64, pend=128)  # part of z representing the expression
+		z_per = waspSlicer(z, pstart=0, pend=64) # part of z repesenenting identity of the person
+		z_exp = waspSlicer(z, pstart=64, pend=128)  # part of z representing the expression
 		return z, z_per, z_exp
 
 	def forward(self, x):
@@ -294,17 +303,6 @@ class AE(nn.Module):
 
 model=AE(latent_variable_size=128)
 
-class waspSlicer(nn.Module):
-   def __init__(self, opt, ngpu=1, pstart = 0, pend=1):
-       super(waspSlicer, self).__init__()
-       self.ngpu = ngpu
-       self.pstart = pstart
-       self.pend = pend
-   def forward(self, input):
-       output = input[:,self.pstart:self.pend].contiguous()
-       return output
-       
-slicer = waspSlicer()
 
 if opt.cuda:
 	 model.cuda()
