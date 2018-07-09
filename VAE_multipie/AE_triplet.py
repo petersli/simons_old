@@ -379,12 +379,12 @@ def train(epoch):
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
 		file = open("losses.txt", "w")
-		file.write('Recon: {:.4f}'.format(recon_loss.data[0].item() / opt.batchSize))
-		file.write('Siamese: {:.4f}'.format(siamese_loss.data[0].item() / opt.batchSize))
+		file.write('Epoch: {} Recon: {:.4f}\n'.format(epoch, recon_loss.data[0].item() / opt.batchSize))
+		file.write('Epoch: {} Siamese: {:.4f}\n'.format(epoch, siamese_loss.data[0].item() / opt.batchSize))
 		file.close()
 
-	print('====> Epoch: {} Average recon loss: {:.4f}'.format(
-		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize)))
+	print('====> Epoch: {} Average recon loss: {:.4f} Average siamese loss: {:.4f}'.format(
+		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize), siamese_train_loss / (len(dataloader) * opt.batchSize)))
 			#divide by (batch_size * num_batches) to get loss for the epoch
 
 	#data
