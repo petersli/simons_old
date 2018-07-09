@@ -240,11 +240,11 @@ class AE(nn.Module):
 
 		# DECODER
 
-		self.d1 = nn.Linear(latent_variable_size, 64*2*4*4)
+		self.d1 = nn.Linear(latent_variable_size, 64*2*2*2)
 
 		# 2 x 2
 
-		self.up1 = nn.Upsample(scale_factor=2)
+		self.up1 = nn.Upsample(scale_factor=2) # removes the *2*2 from output of d1 b/c scale_factor scales both H and W
 		self.pd1 = nn.ReplicationPad2d(1) # +2 to height/width
 		self.d2 = nn.Conv2d(64*2, 64, kernel_size=3, stride=1)  # -2 to height/width
 		self.bn6 = nn.BatchNorm2d(64, eps=1.e-3) 
