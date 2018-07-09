@@ -320,7 +320,8 @@ def siamese_loss_func(z1, z2, label):
 	siamese_func = nn.CosineEmbeddingLoss()
 	siamese_func.size_average = False
 	siamese_func.margin = 0.5
-	y = torch.ones_like(z2)
+	#y = torch.ones_like(z2)
+	y = torch.ones(z1.size()).cuda()
 
 	#size of target has to match size of inputs
 	y.requires_grad_(False)
