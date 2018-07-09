@@ -448,14 +448,14 @@ def test(epoch):
 
 		# test disentangling
 
-		z_per0_exp9 = torch.cat(z_per_dp0, z_exp_dp9, 1) # should be person 0 with expression 9
+		z_per0_exp9 = torch.cat(z_per_dp0, z_exp_dp9, dim=1) # should be person 0 with expression 9
 		recon_per0_exp9 = decode(z_per0_exp9)
 
 		visualizeAsImages(recon_per0_exp9.data.clone(), 
 		opt.dirImageoutput, 
 		filename='epoch_'+str(epoch)+'_per0_exp9', n_sample = 25, nrow=5, normalize=False)
 
-		z_per0_exp1 = torch.cat(z_per_dp0, z_exp_dp1, 1) # should look the same as dp0_img (exp1 and exp0 are the same)
+		z_per0_exp1 = torch.cat(z_per_dp0, z_exp_dp1, dim=1) # should look the same as dp0_img (exp1 and exp0 are the same)
 		recon_per0_exp1 = decode(z_per0_exp1)
 
 		visualizeAsImages(recon_per0_exp1.data.clone(), 
