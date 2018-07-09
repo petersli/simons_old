@@ -368,7 +368,7 @@ def train(epoch):
 
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 		optimizer.zero_grad()
-		recon_loss.backward()
+		recon_loss.backward(retain_graph=True)
 		recon_train_loss += recon_loss.data[0].item()
 
 		# calc siamese loss
@@ -471,7 +471,7 @@ def test(epoch):
 
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 		optimizer.zero_grad()
-		recon_loss.backward()
+		recon_loss.backward(retain_graph=True)
 		recon_test_loss += recon_loss.data[0].item()
 
 		# calc siamese loss
