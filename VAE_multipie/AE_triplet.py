@@ -326,15 +326,9 @@ def siamese_loss_func(z1, z2, label):
 	#size of target has to match size of inputs
 	y.requires_grad_(False)
 	if label == 1: # measure similarity
-		print(z1.size())
-		print(z2.size())
-		print(y.size())
 		return siamese_func(z1, z2, target=y)
 	elif label == -1: # measure dissimilarity
 		y = y * -1
-		print(z1.size())
-		print(z2.size())
-		print(y.size())
 		return siamese_func(z1, z2, target=y)
 
 
@@ -414,17 +408,10 @@ def train(epoch):
 		opt.dirImageoutput, 
 		filename='epoch_'+str(epoch)+'_img1', n_sample = 25, nrow=5, normalize=False)
 
-	#reconstructions
+	#reconstruction (dp0 only)
 	visualizeAsImages(recon_batch_dp0.data.clone(), 
 		opt.dirImageoutput, 
 		filename='epoch_'+str(epoch)+'_recon0', n_sample = 25, nrow=5, normalize=False)
-	visualizeAsImages(recon_batch_dp9.data.clone(), 
-		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon9', n_sample = 25, nrow=5, normalize=False)
-	visualizeAsImages(recon_batch_dp1.data.clone(), 
-		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon1', n_sample = 25, nrow=5, normalize=False)
-
 
 	print('Data and reconstructions saved.')
 
