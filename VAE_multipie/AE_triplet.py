@@ -45,7 +45,7 @@ parser.add_argument('--dirCheckpoints', default='.', help='folder to model check
 parser.add_argument('--dirImageoutput', default='.', help='folder to output images')
 parser.add_argument('--dirTestingoutput', default='.', help='folder to testing results/images')
 parser.add_argument('--manualSeed', type=int, help='manual seed')
-parser.add_argument('--epoch_iter', type=int,default=40, help='number of epochs on entire dataset')
+parser.add_argument('--epoch_iter', type=int,default=350, help='number of epochs on entire dataset')
 parser.add_argument('--location', type = int, default=0, help ='where is the code running')
 parser.add_argument('-f',type=str,default= '', help='dummy input required for jupyter notebook')
 opt = parser.parse_args()
