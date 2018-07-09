@@ -185,8 +185,6 @@ class waspSlicer(nn.Module):
        output = input[:,self.pstart:self.pend].contiguous()
        return output
 
-slicer = waspSlicer(opt)
-
 class AE(nn.Module):
 	def __init__(self, latent_variable_size):
 		super(AE, self).__init__()
@@ -292,10 +290,13 @@ class AE(nn.Module):
 
 		return self.hardtanh(self.d6(self.pd5(self.up5(h5))))
 
+	slice1 = waspSlicer(pstart=0, pend=64)
+	slice2 = waspSlicer(pstart=64, pend=128)
+
 	def get_latent_vectors(self, x):
 		z = self.encode(x) # whole latent vector
-		z_per = slicer(z, pstart=0, pend=64) # part of z repesenenting identity of the person
-		z_exp = slicer(z, pstart=64, pend=128)  # part of z representing the expression
+		z_per = slice1(z) # part of z repesenenting identity of the person
+		z_exp = slice2(z)  # part of z representing the expression
 		return z, z_per, z_exp
 
 	def forward(self, x):
