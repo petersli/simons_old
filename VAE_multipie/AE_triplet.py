@@ -174,21 +174,6 @@ TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session0
 TestingData = []
 TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_select_test/')
 
-
-# class waspSlicer(nn.Module):
-#    def __init__(self, opt, ngpu=1, pstart = 0, pend=1):
-#        super(waspSlicer, self).__init__()
-#        self.ngpu = ngpu
-#        self.pstart = pstart
-#        self.pend = pend
-#    def forward(self, input):
-#        output = input[:,self.pstart:self.pend].contiguous() 
-#        return output
-
-# slice1 = waspSlicer(opt, pstart=0, pend=64)
-# slice2 = waspSlicer(opt, pstart=64, pend=128)
-
-
 class AE(nn.Module):
 	def __init__(self, latent_variable_size):
 		super(AE, self).__init__()
@@ -392,6 +377,11 @@ def train(epoch):
 			100. * batch_idx / len(dataloader),
 			recon_loss.data[0].item() / opt.batchSize, siamese_loss.data[0].item() / opt.batchSize))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
+
+		file = open("losses.txt", "w")
+		file.write('Recon: {:.4f}'.format(recon_loss.data[0].item() / opt.batchSize))
+		file.write('Siamese: {:.4f}'.format(siamese_loss.data[0].item() / opt.batchSize))
+		file.close()
 
 	print('====> Epoch: {} Average recon loss: {:.4f}'.format(
 		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize)))
