@@ -330,6 +330,7 @@ def train(epoch):
 	print('# size of the current (sub)dataset is %d' %len(dataset))
  #   train_amount = train_amount + len(dataset)
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
+	lossfile = open("losses.txt", "w")
 	for batch_idx, data_point in enumerate(dataloader, 0):
 
 		gc.collect() # collect garbage
@@ -378,12 +379,13 @@ def train(epoch):
 			recon_loss.data[0].item() / opt.batchSize, sim_loss.data[0].item() / opt.batchSize, dis_loss.data[0].item() / opt.batchSize))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
-		file = open("losses.txt", "w")
-		file.write('Epoch: {} Recon: {:.4f}\n'.format(epoch, recon_loss.data[0].item() / opt.batchSize))
-		file.write('Epoch: {} SiameseSim: {:.4f} SiameseDis: {:.4f}\n'.format(epoch, sim_loss.data[0].item() / opt.batchSize,
+		
+		lossfile.write('Epoch: {} Recon: {:.4f}\n'.format(epoch, recon_loss.data[0].item() / opt.batchSize))
+		lossfile.write('Epoch: {} SiameseSim: {:.4f} SiameseDis: {:.4f}\n'.format(epoch, sim_loss.data[0].item() / opt.batchSize,
 		 dis_loss.data[0].item() / opt.batchSize))
-		file.close()
-
+		
+	lossfile.close()
+	
 	print('====> Epoch: {} Average recon loss: {:.4f} Average siamese loss: {:.4f}'.format(
 		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize), siamese_train_loss / (len(dataloader) * opt.batchSize)))
 			#divide by (batch_size * num_batches) to get loss for the epoch
