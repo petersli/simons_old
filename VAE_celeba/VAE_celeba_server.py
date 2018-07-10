@@ -218,8 +218,8 @@ def test(epoch):
         recon_batch, mu, logvar = model(data)
         test_loss += loss_function(recon_batch, data, mu, logvar).data[0]
 
-        torchvision.utils.save_image(data.data, '../imgs/Epoch_{}_data.jpg'.format(epoch), nrow=8, padding=2)
-        torchvision.utils.save_image(recon_batch.data, '../imgs/Epoch_{}_recon.jpg'.format(epoch), nrow=8, padding=2)
+        torchvision.utils.save_image(data.data, '/home/peterli/simons/VAE_celeba/imgs/Epoch_{}_data.jpg'.format(epoch), nrow=8, padding=2)
+        torchvision.utils.save_image(recon_batch.data, '/home/peterli/simons/VAE_celeba/imgs/Epoch_{}_recon.jpg'.format(epoch), nrow=8, padding=2)
 
     test_loss /= (len(test_loader)*64)
     print('====> Test set loss: {:.4f}'.format(test_loss))
@@ -252,7 +252,7 @@ def perform_latent_space_arithmatics(items): # input is list of tuples of 3 [(a1
     result = [im for item in result for im in item]
 
     result = torch.cat(result, 0)
-    torchvision.utils.save_image(result.data, '../imgs/vec_math.jpg', nrow=3+numsample, padding=2)
+    torchvision.utils.save_image(result.data, '/home/peterli/simons/VAE_celeba/imgs/vec_math.jpg', nrow=3+numsample, padding=2)
 
 
 def latent_space_transition(items): # input is list of tuples of  (a,b)
@@ -281,7 +281,7 @@ def latent_space_transition(items): # input is list of tuples of  (a,b)
     result = [im for item in result for im in item]
 
     result = torch.cat(result, 0)
-    torchvision.utils.save_image(result.data, '../imgs/trans.jpg', nrow=2+numsample, padding=2)
+    torchvision.utils.save_image(result.data, '/home/peterli/simons/VAE_celeba/imgs/trans.jpg', nrow=2+numsample, padding=2)
 
 
 def rand_faces(num=5):
@@ -292,10 +292,10 @@ def rand_faces(num=5):
     if args.cuda:
         z = z.cuda()
     recon = model.decode(z)
-    torchvision.utils.save_image(recon.data, '../imgs/rand_faces.jpg', nrow=num, padding=2)
+    torchvision.utils.save_image(recon.data, '/home/peterli/simons/VAE_celeba/imgs/rand_faces.jpg', nrow=num, padding=2)
 
 def load_last_model():
-    models = glob('../models/*.pth')
+    models = glob('/home/peterli/simons/VAE_celeba/models/*.pth')
     model_ids = [(int(f.split('_')[1]), f) for f in models]
     start_epoch, last_cp = max(model_ids, key=lambda item:item[0])  # max returns the model_id with the largest proxy value (item)
     model.load_state_dict(torch.load(last_cp))
@@ -308,12 +308,12 @@ def start_training():
     for epoch in range(start_epoch + 1, start_epoch + args.epochs + 1):
         train_loss = train(epoch)
         test_loss = test(epoch)
-        torch.save(model.state_dict(), '../models/Epoch_{}_Train_loss_{:.4f}_Test_loss_{:.4f}.pth'.format(epoch, train_loss, test_loss))
+        torch.save(model.state_dict(), '/home/peterli/simons/VAE_celeba/models/Epoch_{}_Train_loss_{:.4f}_Test_loss_{:.4f}.pth'.format(epoch, train_loss, test_loss))
 
 def last_model_to_cpu():
     _, last_cp = load_last_model()
     model.cpu()
-    torch.save(model.state_dict(), '../models/cpu_'+last_cp.split('/')[-1])
+    torch.save(model.state_dict(), '/home/peterli/simons/VAE_celeba/models/cpu_'+last_cp.split('/')[-1])
 
 if __name__ == '__main__':
     start_training()
