@@ -1,2 +1,48 @@
-Epoch: 350 Recon: 8.3573
-Epoch: 350 SiameseSim: 0.0317 SiameseDis: 0.0875
+Epoch: 4 Recon: 1045.3837
+Epoch: 4 SiameseSim: 0.2346 SiameseDis: 0.7022
+Epoch: 4 Recon: 1003.8460
+Epoch: 4 SiameseSim: 0.2274 SiameseDis: 0.7154
+Epoch: 4 Recon: 950.6131
+Epoch: 4 SiameseSim: 0.2354 SiameseDis: 0.7104
+Epoch: 4 Recon: 974.5265
+Epoch: 4 SiameseSim: 0.2168 SiameseDis: 0.7266
+Epoch: 4 Recon: 916.2494
+Epoch: 4 SiameseSim: 0.2034 SiameseDis: 0.7394
+Epoch: 4 Recon: 880.5405
+Epoch: 4 SiameseSim: 0.2120 SiameseDis: 0.7382
+Epoch: 4 Recon: 878.3341
+Epoch: 4 SiameseSim: 0.1968 SiameseDis: 0.7550
+Epoch: 4 Recon: 850.7320
+Epoch: 4 SiameseSim: 0.2050 SiameseDis: 0.7478
+Epoch: 4 Recon: 843.1353
+Epoch: 4 SiameseSim: 0.2023 SiameseDis: 0.7508
+Epoch: 4 Recon: 824.3839
+Epoch: 4 SiameseSim: 0.2048 SiameseDis: 0.7606
+Epoch: 4 Recon: 791.1645
+Epoch: 4 SiameseSim: 0.2042 SiameseDis: 0.7562
+Epoch: 4 Recon: 741.2752
+Epoch: 4 SiameseSim: 0.1947 SiameseDis: 0.7741
+Epoch: 4 Recon: 775.9887
+Epoch: 4 SiameseSim: 0.1932 SiameseDis: 0.7728
+Epoch: 4 Recon: 735.7619
+Epoch: 4 SiameseSim: 0.1980 SiameseDis: 0.7677
+Epoch: 4 Recon: 703.7355
+Epoch: 4 SiameseSim: 0.1732 SiameseDis: 0.7978
+Epoch: 4 Recon: 703.5388
+Epoch: 4 SiameseSim: 0.1743 SiameseDis: 0.7876
+Epoch: 4 Recon: 753.1557
+Epoch: 4 SiameseSim: 0.1756 SiameseDis: 0.7957
+Epoch: 4 Recon: 734.2103
+Epoch: 4 SiameseSim: 0.1801 SiameseDis: 0.7902
+Epoch: 4 Recon: 696.3299
+Epoch: 4 SiameseSim: 0.1720 SiameseDis: 0.7947
+Epoch: 4 Recon: 688.7673
+Epoch: 4 SiameseSim: 0.1712 SiameseDis: 0.7971
+Epoch: 4 Recon: 665.8847
+Epoch: 4 SiameseSim: 0.1635 SiameseDis: 0.8074
+Epoch: 4 Recon: 634.1430
+Epoch: 4 SiameseSim: 0.1784 SiameseDis: 0.7929
+Epoch: 4 Recon: 639.8261
+Epoch: 4 SiameseSim: 0.1730 SiameseDis: 0.7983
+Epoch: 4 Recon: 630.6084
+Epoch: 4 SiameseSim: 0.1790 SiameseDis: 0.7907
