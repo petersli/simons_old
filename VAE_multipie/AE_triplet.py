@@ -323,6 +323,7 @@ lossfile = open("losses.txt", "w")
 sim_loss = 0
 dis_loss = 0
 
+
 def train(epoch):
 	print("train")
 	model.train()
@@ -336,6 +337,8 @@ def train(epoch):
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
 	
 	for batch_idx, data_point in enumerate(dataloader, 0):
+
+		
 
 		gc.collect() # collect garbage
 		# sample the data points: 
@@ -393,11 +396,11 @@ def train(epoch):
 	lossfile.write('Epoch: {} SiameseSim: {:.4f} SiameseDis: {:.4f}\n'.format(epoch, sim_loss.data[0].item() / opt.batchSize, 
 		dis_loss.data[0].item() / opt.batchSize))
 
-	lossfile.close()
 
 	print('====> Epoch: {} Average recon loss: {:.4f} Average siamese loss: {:.4f}'.format(
 		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize), siamese_train_loss / (len(dataloader) * opt.batchSize)))
 			#divide by (batch_size * num_batches) to get loss for the epoch
+
 
 	#data
 	visualizeAsImages(dp0_img.data.clone(), 
@@ -418,6 +421,7 @@ def train(epoch):
 	print('Data and reconstructions saved.')
 
 	return recon_train_loss / (len(dataloader) * opt.batchSize), siamese_train_loss / (len(dataloader) * opt.batchSize)
+
 
 def test(epoch):
 	print("test")
@@ -497,12 +501,15 @@ def start_training():
 	# start_epoch, _ = load_last_model()
 	start_epoch = 0
 
+
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
 		recon_loss, siamese_loss = train(epoch)
 		torch.save(model.state_dict(),
 		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_Siamese_{:.4f}.pth'.format(epoch, recon_loss, siamese_loss))
 		if epoch % 10 == 0:
 			test(epoch)
+
+	lossfile.close()
 
 def last_model_to_cpu():
 	_, last_cp = load_last_model()
