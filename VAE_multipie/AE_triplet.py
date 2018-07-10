@@ -391,18 +391,18 @@ def train(epoch):
 	#data
 	visualizeAsImages(dp0_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img0', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_img0', n_sample = 18, nrow=5, normalize=False)
 	visualizeAsImages(dp9_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img9', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_img9', n_sample = 18, nrow=5, normalize=False)
 	visualizeAsImages(dp1_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img1', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_img1', n_sample = 18, nrow=5, normalize=False)
 
 	#reconstruction (dp0 only)
 	visualizeAsImages(recon_batch_dp0.data.clone(), 
-		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon0', n_sample = 25, nrow=5, normalize=False)
+		opt.dirImageoutput,
+		filename='epoch_'+str(epoch)+'_recon0', n_sample = 18, nrow=5, normalize=False)
 
 	print('Data and reconstructions saved.')
 
@@ -444,14 +444,14 @@ def test(epoch):
 
 		visualizeAsImages(recon_per0_exp9.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_per0_exp9', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_per0_exp9', n_sample = 18, nrow=5, normalize=False)
 
 		z_per0_exp1 = torch.cat((z_per_dp0, z_exp_dp1), dim=1) # should look the same as dp0_img (exp1 and exp0 are the same)
 		recon_per0_exp1 = model.decode(z_per0_exp1)
 
 		visualizeAsImages(recon_per0_exp1.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_per0_exp1', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_per0_exp1', n_sample = 18, nrow=5, normalize=False)
 
 
 		# calc reconstruction loss (dp0 only)
