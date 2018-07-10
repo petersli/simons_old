@@ -294,12 +294,12 @@ def rand_faces(num=5):
     recon = model.decode(z)
     torchvision.utils.save_image(recon.data, '../imgs/rand_faces.jpg', nrow=num, padding=2)
 
-# def load_last_model():
-#     models = glob('../models/*.pth')
-#     model_ids = [(int(f.split('_')[1]), f) for f in models]
-#     start_epoch, last_cp = max(model_ids, key=lambda item:item[0])  # max returns the model_id with the largest proxy value (item)
-#     model.load_state_dict(torch.load(last_cp))
-#     return start_epoch, last_cp
+def load_last_model():
+    models = glob('../models/*.pth')
+    model_ids = [(int(f.split('_')[1]), f) for f in models]
+    start_epoch, last_cp = max(model_ids, key=lambda item:item[0])  # max returns the model_id with the largest proxy value (item)
+    model.load_state_dict(torch.load(last_cp))
+    return start_epoch, last_cp
 
 def start_training():
     # start_epoch, _ = load_last_model()
@@ -308,12 +308,12 @@ def start_training():
     for epoch in range(start_epoch + 1, start_epoch + args.epochs + 1):
         train_loss = train(epoch)
         test_loss = test(epoch)
-        # torch.save(model.state_dict(), '../models/Epoch_{}_Train_loss_{:.4f}_Test_loss_{:.4f}.pth'.format(epoch, train_loss, test_loss))
+        torch.save(model.state_dict(), '../models/Epoch_{}_Train_loss_{:.4f}_Test_loss_{:.4f}.pth'.format(epoch, train_loss, test_loss))
 
 def last_model_to_cpu():
     _, last_cp = load_last_model()
     model.cpu()
-    # torch.save(model.state_dict(), '../models/cpu_'+last_cp.split('/')[-1])
+    torch.save(model.state_dict(), '../models/cpu_'+last_cp.split('/')[-1])
 
 if __name__ == '__main__':
     start_training()
