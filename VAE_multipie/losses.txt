@@ -1,0 +1,2 @@
+Epoch: 350 Recon: 8.3573
+Epoch: 350 SiameseSim: 0.0317 SiameseDis: 0.0875
