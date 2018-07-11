@@ -392,7 +392,7 @@ def train(epoch):
 
 
 
-	lossfile.write('Epoch: {} Recon: {:.4f}\n'.format(epoch, recon_train_loss / opt.batchSize))
+	lossfile.write('Epoch: {} Recon: {:.4f}\n'.format(epoch, recon_train_loss / (len(dataloader) * opt.batchSize))
 	lossfile.write('Epoch: {} SiameseSim: {:.4f} SiameseDis: {:.4f}\n'.format(epoch, sim_loss.data[0].item() / opt.batchSize, 
 		dis_loss.data[0].item() / opt.batchSize))
 
