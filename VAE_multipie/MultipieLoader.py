@@ -158,9 +158,9 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
             with Image.open(f0) as img0:
                 img0 = img0.convert('RGB')
 
-                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(str(img0)[-20:-4])
+                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(img.filename)
                 key = (ids, ide)
-                print(str(img0))
+                print(img.filename)
                 print(key)
                 coords = dict[key]
                 img0 = img0[coords[1]:coords[3], coords[0]:coords[2]] #crop
