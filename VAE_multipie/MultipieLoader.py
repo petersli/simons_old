@@ -158,9 +158,9 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
             with Image.open(f0) as img0:
                 img0 = img0.convert('RGB')
 
-                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(os.path.relpath(img0)[-20:-4])
+                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(os.path.abspath(img0)[-20:-4])
                 key = (ids, ide)
-                print(os.path.relpath(img0))
+                print(os.path.abspath(img0))
                 print(key)
                 coords = dict[key]
                 img0 = img0[coords[1]:coords[3], coords[0]:coords[2]] #crop
@@ -172,9 +172,9 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
             with Image.open(f9) as img9:
                 img9 = img9.convert('RGB')
 
-                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(os.path.relpath(img9)[-20:-4])
+                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(os.path.abspath(img9)[-20:-4])
                 key = (ids, ide)
-                print(os.path.relpath(img9))
+                print(os.path.abspath(img9))
                 print(key)
                 coords = dict[key]
                 img9 = img9[coords[1]:coords[3], coords[0]:coords[2]] #crop
@@ -186,9 +186,9 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
             with Image.open(f1) as img1:
                 img1 = img1.convert('RGB')
 
-                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(os.path.relpath(img1)[-20:-4])
+                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(os.path.abspath(img1)[-20:-4])
                 key = (ids, ide)
-                print(os.path.relpath(img1))
+                print(os.path.abspath(img1))
                 print(key)
                 coords = dict[key]
                 img1 = img1[coords[1]:coords[3], coords[0]:coords[2]] #crop
