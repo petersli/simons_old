@@ -157,7 +157,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
         with open(imgPath0, 'rb') as f0:
             with Image.open(f0) as img0:
                 img0 = img0.convert('RGB')
-
+                print(imgPath0)
                 #ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(os.path.abspath(img0)[-20:-4])
                 key = (self.ids[index], self.ide[index])
                 print(key)
