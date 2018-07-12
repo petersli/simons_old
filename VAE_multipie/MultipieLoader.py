@@ -162,7 +162,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
                 key = (ids, ide)
                 print(key)
                 coords = dict[key]
-                img0 = img0[coords[1]:coords[3], coords[0]:coords[2]] #crop
+                img0 = img0.crop(coords) #crop
 
                 if resize:
                     img0 = img0.resize((resize, resize),Image.ANTIALIAS)
@@ -174,7 +174,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
                 key = (ids, ide)                
                 print(key)
                 coords = dict[key]
-                img9 = img9[coords[1]:coords[3], coords[0]:coords[2]] #crop
+                img9 = img9.crop(coords) #crop
 
                 if resize:
                     img9 = img9.resize((resize, resize),Image.ANTIALIAS)
@@ -187,7 +187,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
                 key = (ids, ide)
                 print(key)
                 coords = dict[key]
-                img1 = img1[coords[1]:coords[3], coords[0]:coords[2]] #crop
+                img1 = img1.crop(coords) #crop
 
                 if resize:
                     img1 = img1.resize((resize, resize),Image.ANTIALIAS)
