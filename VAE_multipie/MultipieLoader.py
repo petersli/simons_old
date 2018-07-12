@@ -160,6 +160,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
 
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(str(img0)[-20:-4])
                 key = (ids, ide)
+                print(key)
                 coords = dict[key]
                 img0 = img0[coords[1]:coords[3], coords[0]:coords[2]] #crop
 
@@ -172,6 +173,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
 
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(str(img9)[-20:-4])
                 key = (ids, ide)
+                print(key)
                 coords = dict[key]
                 img9 = img9[coords[1]:coords[3], coords[0]:coords[2]] #crop
 
@@ -184,6 +186,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
 
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(str(img1)[-20:-4])
                 key = (ids, ide)
+                print(key)
                 coords = dict[key]
                 img1 = img1[coords[1]:coords[3], coords[0]:coords[2]] #crop
 
