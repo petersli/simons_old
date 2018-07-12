@@ -338,8 +338,6 @@ def train(epoch):
 	
 	for batch_idx, data_point in enumerate(dataloader, 0):
 
-		
-
 		gc.collect() # collect garbage
 		# sample the data points: 
 		# dp0_img: image of data point 0
@@ -376,21 +374,12 @@ def train(epoch):
 		siamese_loss.backward()
 		siamese_train_loss += siamese_loss.data[0].item()
 
-	   
-
-
 		optimizer.step()
 		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tReconLoss: {:.6f}\tSimLoss: {:.6f}\tDisLoss: {:.6f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
 			100. * batch_idx / len(dataloader),
 			recon_loss.data[0].item() / opt.batchSize, sim_loss.data[0].item() / opt.batchSize, dis_loss.data[0].item() / opt.batchSize))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
-
-		
-		
-		
-
-
 
 	lossfile.write('Epoch: {} Recon: {:.4f}\n'.format(epoch, recon_train_loss / (len(dataloader) * opt.batchSize))
 	lossfile.write('Epoch: {} SiameseSim: {:.4f} SiameseDis: {:.4f}\n'.format(epoch, sim_loss.data[0].item() / opt.batchSize, 
@@ -419,6 +408,7 @@ def train(epoch):
 		filename='epoch_'+str(epoch)+'_recon0', n_sample = 18, nrow=5, normalize=False)
 
 	print('Data and reconstructions saved.')
+
 
 	return recon_train_loss / (len(dataloader) * opt.batchSize), siamese_train_loss / (len(dataloader) * opt.batchSize)
 
