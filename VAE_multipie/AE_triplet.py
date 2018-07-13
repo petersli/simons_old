@@ -283,9 +283,6 @@ class AE(nn.Module):
 		z = self.encode(x) # whole latent vector
 		z_per = z[:,0:64].contiguous() # part of z repesenenting identity of the person
 		z_exp = z[:,64:128].contiguous()  # part of z representing the expression
-		print(z.size())
-		print(z_per.size())
-		print(z_exp.size())
 		return z, z_per, z_exp
 
 	def forward(self, x):
