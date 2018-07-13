@@ -4,18 +4,8 @@ import torch
 import torch.utils.data
 import torch.nn as nn
 import torch.optim as optim
-from torch.autograd import Variable
 import torchvision
 from torchvision import datasets, transforms
-#import matplotlib.pyplot as plt
-import time
-from glob import glob
-#from util import *
-import numpy as np
-from PIL import Image
-
-import os
-import random
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torchvision.datasets as dset
@@ -23,7 +13,17 @@ import torchvision.transforms as transforms
 import torchvision.utils as vutils
 from torch.autograd import gradcheck
 from torch.autograd import Function
+from torch.autograd import Variable
 import math
+#import matplotlib.pyplot as plt
+import time
+from glob import glob
+#from util import *
+import numpy as np
+from PIL import Image
+import os
+import random
+
 # our data loader
 import MultipieLoader
 import gc
@@ -212,6 +212,12 @@ class AE(nn.Module):
 
 		# batch_size x latent_variable_size (100 x 128)
 
+		# DISENTANGLING
+
+		self.disentangle1 = nn.Linear(latent_variable_size, latent_variable_size / 2)
+		self.disentangle2 = nn.Linear(latent_variable_size, latent_variable_size / 2)
+		self.disentangle3 = nn.Linear(latent_variable_size, latent_variable_size)
+
 		# DECODER
 
 		self.d1 = nn.Linear(latent_variable_size, 64*2*2*2)
@@ -280,10 +286,22 @@ class AE(nn.Module):
 		return self.hardtanh(self.d6(self.pd5(self.up5(h5))))
 
 	def get_latent_vectors(self, x):
-		z = self.encode(x) # whole latent vector
-		z_per = z[:,0:64].contiguous() # part of z repesenenting identity of the person
-		z_exp = z[:,64:128].contiguous()  # part of z representing the expression
-		return z, z_per, z_exp
+		# z = self.encode(x) # whole latent vector
+		# z_per = z[:,0:64].contiguous() # part of z repesenenting identity of the person
+		# z_exp = z[:,64:128].contiguous()  # part of z representing the expression
+		# return z, z_per, z_exp
+
+		z_enc = self.encode(x)
+		print('z_enc', z_enc.size())
+		z_per = self.disentangle1(z_enc)
+		print('z_per', z_per.size())
+		z_exp = self.disentangle2(z_enc)
+		print('z_exp', z_exp.size())
+		z_dec = self.disentangle3(torch.cat((z_per, z_exp), dim=1))
+		print('z_dec', z_dec.size())
+
+		return z_dec, z_per, z_exp
+
 
 	def forward(self, x):
 		z, z_per, z_exp = self.get_latent_vectors(x)
