@@ -292,13 +292,9 @@ class AE(nn.Module):
 		# return z, z_per, z_exp
 
 		z_enc = self.encode(x)
-		print('z_enc', z_enc.size())
 		z_per = self.disentangle1(z_enc)
-		print('z_per', z_per.size())
-		z_exp = self.disentangle2(z_enc)
-		print('z_exp', z_exp.size())
+		z_exp = self.disentangle2(z_enc)		
 		z_dec = self.disentangle3(torch.cat((z_per, z_exp), dim=1))
-		print('z_dec', z_dec.size())
 
 		return z_dec, z_per, z_exp
 
