@@ -45,7 +45,7 @@ parser.add_argument('--dirCheckpoints', default='.', help='folder to model check
 parser.add_argument('--dirImageoutput', default='.', help='folder to output images')
 parser.add_argument('--dirTestingoutput', default='.', help='folder to testing results/images')
 parser.add_argument('--manualSeed', type=int, help='manual seed')
-parser.add_argument('--epoch_iter', type=int,default=1000, help='number of epochs on entire dataset')
+parser.add_argument('--epoch_iter', type=int,default=500, help='number of epochs on entire dataset')
 parser.add_argument('--location', type = int, default=0, help ='where is the code running')
 parser.add_argument('-f',type=str,default= '', help='dummy input required for jupyter notebook')
 opt = parser.parse_args()
@@ -291,10 +291,10 @@ class AE(nn.Module):
 		# z_exp = z[:,64:128].contiguous()  # part of z representing the expression
 		# return z, z_per, z_exp
 
-		z_enc = self.encode(x)
-		z_per = self.disentangle1(z_enc)
-		z_exp = self.disentangle2(z_enc)		
-		z_dec = self.disentangle3(torch.cat((z_per, z_exp), dim=1))
+		z_enc = self.relu(self.encode(x))
+		z_per = self.relu(self.disentangle1(z_enc))
+		z_exp = self.relu(self.disentangle2(z_enc))	
+		z_dec = self.relu(self.disentangle3(torch.cat((z_per, z_exp), dim=1)))
 
 		return z_dec, z_per, z_exp
 
@@ -333,7 +333,7 @@ def siamese_loss_func(z1, z2, label):
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
-lossfile = open("losses.txt", "w")
+lossfile = open(opt.output_dir_prefix + "losses.txt", "w")
 sim_loss = 0
 dis_loss = 0
 
