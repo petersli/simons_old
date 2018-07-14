@@ -262,6 +262,7 @@ class AE(nn.Module):
 		self.leakyrelu = nn.LeakyReLU(0.2)
 		self.relu = nn.ReLU()
 		self.hardtanh = nn.Hardtanh()
+		self.sigmoid = nn.Sigmoid()
 
  	def encode(self, x):
 		#print("encode")
@@ -291,7 +292,7 @@ class AE(nn.Module):
 		# z_exp = z[:,64:128].contiguous()  # part of z representing the expression
 		# return z, z_per, z_exp
 
-		z_enc = self.relu(self.encode(x))
+		z_enc = self.sigmoid(self.encode(x))
 		z_per = self.relu(self.disentangle1(z_enc))
 		z_exp = self.relu(self.disentangle2(z_enc))	
 		z_dec = self.relu(self.disentangle3(torch.cat((z_per, z_exp), dim=1)))
