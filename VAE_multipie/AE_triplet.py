@@ -380,6 +380,8 @@ def train(epoch):
 
 		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
 
+		print(z_exp_dp0, neutral_target)
+
 		# calc reconstruction loss (dp0 only)
 
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
@@ -397,7 +399,9 @@ def train(epoch):
 		siamese_train_loss += siamese_loss.data[0].item()
 
 		# BCE expression loss
-		print(z_exp_dp0, neutral_target)
+		
+
+
 		if dp0_ide == '01': #neutral
 			expression_loss = BCE(z_exp_dp0, neutral_target)
 		else: #smile
