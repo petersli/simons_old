@@ -338,8 +338,8 @@ lossfile = open(opt.output_dir_prefix + "losses.txt", "w")
 sim_loss = 0
 dis_loss = 0
 
-smile_target = torch.ones(opt.batchSize, latent_variable_size/2)
-neutral_target = torch.zeros(opt.batchSize, latent_variable_size/2)
+smile_target = torch.ones(opt.batchSize, model.latent_variable_size/2)
+neutral_target = torch.zeros(opt.batchSize, model.latent_variable_size/2)
 
 def train(epoch):
 	print("train")
