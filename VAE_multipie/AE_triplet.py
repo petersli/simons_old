@@ -332,7 +332,8 @@ def siamese_loss_func(z1, z2, label):
 		return siamese_func(z1, z2, target=y)
 
 def BCE(x, target):
-	return nn.BCELoss(x, target)
+	BCE_func = nn.BCELoss()
+	return BCE_func(x, target)
 
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
