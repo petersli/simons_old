@@ -397,21 +397,20 @@ def train(epoch):
 
 		# BCE expression loss
 
-
 		if dp0_ide == '01': #neutral
-			expression_loss = BCE(z_exp_dp0, neutral_target).data[0].item()
+			expression_loss = BCE(z_exp_dp0, neutral_target)
 		else: #smile
-			expression_loss = BCE(z_exp_dp0, smile_target).data[0].item()
+			expression_loss = BCE(z_exp_dp0, smile_target)
 
 		if dp9_ide == '01': #neutral
-			expression_loss += BCE(z_exp_dp9, neutral_target).data[0].item()
+			expression_loss = expression_loss + BCE(z_exp_dp9, neutral_target)
 		else: #smile
-			expression_loss += BCE(z_exp_dp9, smile_target).data[0].item()
+			expression_loss = expression_loss + BCE(z_exp_dp9, smile_target)
 
 		if dp1_ide == '01': #neutral
-			expression_loss += BCE(z_exp_dp1, neutral_target).data[0].item()
+			expression_loss = expression_loss + BCE(z_exp_dp1, neutral_target)
 		else: #smile
-			expression_loss += BCE(z_exp_dp1, smile_target).data[0].item()
+			expression_loss = expression_loss + BCE(z_exp_dp1, smile_target)
 
 		expression_loss.backward()
 		expression_train_loss += expression_loss[0].item()
@@ -519,22 +518,20 @@ def test(epoch):
 
 		# BCE expression loss
 
-
-		expression_loss = 0
 		if dp0_ide == '01': #neutral
-			expression_loss = BCE(z_exp_dp0, neutral_target).data[0].item()
+			expression_loss = BCE(z_exp_dp0, neutral_target)
 		else: #smile
-			expression_loss = BCE(z_exp_dp0, smile_target).data[0].item()
+			expression_loss = BCE(z_exp_dp0, smile_target)
 
 		if dp9_ide == '01': #neutral
-			expression_loss += BCE(z_exp_dp9, neutral_target).data[0].item()
+			expression_loss = expression_loss + BCE(z_exp_dp9, neutral_target)
 		else: #smile
-			expression_loss += BCE(z_exp_dp9, smile_target).data[0].item()
+			expression_loss = expression_loss + BCE(z_exp_dp9, smile_target)
 
 		if dp1_ide == '01': #neutral
-			expression_loss += BCE(z_exp_dp1, neutral_target).data[0].item()
+			expression_loss = expression_loss + BCE(z_exp_dp1, neutral_target)
 		else: #smile
-			expression_loss += BCE(z_exp_dp1, smile_target).data[0].item()
+			expression_loss = expression_loss + BCE(z_exp_dp1, smile_target)
 
 		expression_train_loss += expression_loss[0].item()
 
