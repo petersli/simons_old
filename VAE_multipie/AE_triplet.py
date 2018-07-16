@@ -287,17 +287,17 @@ class AE(nn.Module):
 		return self.hardtanh(self.d6(self.pd5(self.up5(h5))))
 
 	def get_latent_vectors(self, x):
-		z = self.encode(x) # whole latent vector
-		z_per = z[:,0:64].contiguous() # part of z repesenenting identity of the person
-		z_exp = z[:,64:128].contiguous()  # part of z representing the expression
-		return z, z_per, z_exp
+		# z = self.encode(x) # whole latent vector
+		# z_per = z[:,0:64].contiguous() # part of z repesenenting identity of the person
+		# z_exp = z[:,64:128].contiguous()  # part of z representing the expression
+		# return z, z_per, z_exp
 
-		# z_enc = self.encode(x)
-		# z_per = self.relu(self.disentangle1(z_enc))
-		# z_exp = self.relu(self.disentangle2(z_enc))	
-		# z_dec = self.relu(self.disentangle3(torch.cat((z_per, z_exp), dim=1)))
+		z_enc = self.encode(x)
+		z_per = self.sigmoid(self.disentangle1(z_enc))
+		z_exp = self.sigmoid(self.disentangle2(z_enc))	
+		z_dec = self.sigmoid(self.disentangle3(torch.cat((z_per, z_exp), dim=1)))
 
-		# return z_dec, z_per, z_exp
+		return z_dec, z_per, z_exp
 
 
 	def forward(self, x):
@@ -379,8 +379,6 @@ def train(epoch):
 		model.zero_grad()
 
 		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
-
-		print(z_exp_dp0, neutral_target)
 
 		# calc reconstruction loss (dp0 only)
 
