@@ -364,7 +364,7 @@ def train(epoch):
 		dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide = data_point
 		dp0_img, dp9_img, dp1_img = parseSampledDataTripletMultipie(dp0_img, dp9_img, dp1_img)
 		if opt.cuda:
-			dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide = setCuda(dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide)
+			dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
 		dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
 
