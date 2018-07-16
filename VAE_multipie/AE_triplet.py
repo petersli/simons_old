@@ -345,6 +345,8 @@ dis_loss = 0
 smile_target = torch.ones(opt.batchSize, model.latent_variable_size/2).cuda()
 neutral_target = torch.zeros(opt.batchSize, model.latent_variable_size/2).cuda()
 
+print(smile_target)
+print(neutral_target)
 def train(epoch):
 	print("train")
 	model.train()
