@@ -345,8 +345,6 @@ dis_loss = 0
 smile_target = torch.ones(opt.batchSize, model.latent_variable_size/2).cuda()
 neutral_target = torch.zeros(opt.batchSize, model.latent_variable_size/2).cuda()
 
-print(smile_target)
-print(neutral_target)
 def train(epoch):
 	print("train")
 	model.train()
@@ -402,6 +400,7 @@ def train(epoch):
 
 		if dp0_ide == '01': #neutral
 			expression_loss = BCE(z_exp_dp0, neutral_target)
+			print(z_exp_dp0, neutral_target)
 		else: #smile
 			expression_loss = BCE(z_exp_dp0, smile_target)
 
