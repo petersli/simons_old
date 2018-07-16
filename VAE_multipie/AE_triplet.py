@@ -214,9 +214,9 @@ class AE(nn.Module):
 
 		# DISENTANGLING
 
-		self.disentangle1 = nn.Linear(latent_variable_size, latent_variable_size / 2)
-		self.disentangle2 = nn.Linear(latent_variable_size, latent_variable_size / 2)
-		self.disentangle3 = nn.Linear(latent_variable_size, latent_variable_size)
+		# self.disentangle1 = nn.Linear(latent_variable_size, latent_variable_size / 2)
+		# self.disentangle2 = nn.Linear(latent_variable_size, latent_variable_size / 2)
+		# self.disentangle3 = nn.Linear(latent_variable_size, latent_variable_size)
 
 		# DECODER
 
@@ -287,17 +287,17 @@ class AE(nn.Module):
 		return self.hardtanh(self.d6(self.pd5(self.up5(h5))))
 
 	def get_latent_vectors(self, x):
-		# z = self.encode(x) # whole latent vector
-		# z_per = z[:,0:64].contiguous() # part of z repesenenting identity of the person
-		# z_exp = z[:,64:128].contiguous()  # part of z representing the expression
-		# return z, z_per, z_exp
+		z = self.encode(x) # whole latent vector
+		z_per = z[:,0:64].contiguous() # part of z repesenenting identity of the person
+		z_exp = z[:,64:128].contiguous()  # part of z representing the expression
+		return z, z_per, z_exp
 
-		z_enc = self.sigmoid(self.encode(x))
-		z_per = self.relu(self.disentangle1(z_enc))
-		z_exp = self.relu(self.disentangle2(z_enc))	
-		z_dec = self.relu(self.disentangle3(torch.cat((z_per, z_exp), dim=1)))
+		# z_enc = self.sigmoid(self.encode(x))
+		# z_per = self.relu(self.disentangle1(z_enc))
+		# z_exp = self.relu(self.disentangle2(z_enc))	
+		# z_dec = self.relu(self.disentangle3(torch.cat((z_per, z_exp), dim=1)))
 
-		return z_dec, z_per, z_exp
+		# return z_dec, z_per, z_exp
 
 
 	def forward(self, x):
@@ -338,12 +338,15 @@ lossfile = open(opt.output_dir_prefix + "losses.txt", "w")
 sim_loss = 0
 dis_loss = 0
 
+smile_target = torch.ones(opt.batchSize, opt.latent_variable_size/2)
+neutral_target = torch.zeros(opt.batchSize, opt.latent_variable_size/2)
 
 def train(epoch):
 	print("train")
 	model.train()
 	recon_train_loss = 0
 	siamese_train_loss = 0
+	expression_train_loss = 0
 	dataroot = random.sample(TrainingData,1)[0]
 
 	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
@@ -358,10 +361,10 @@ def train(epoch):
 		# dp0_img: image of data point 0
 		# dp9_img: image of data point 9, which is different in ``expression'' compare to dp0
 		# dp1_img: image of data point 1, which is different in ``person'' compare to dp0
-		dp0_img, dp9_img, dp1_img = data_point
+		dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide = data_point
 		dp0_img, dp9_img, dp1_img = parseSampledDataTripletMultipie(dp0_img, dp9_img, dp1_img)
 		if opt.cuda:
-			dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
+			dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide = setCuda(dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide)
 		dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
 
@@ -386,23 +389,50 @@ def train(epoch):
 		dis_loss = siamese_loss_func(z_exp_dp0, z_exp_dp9, -1) + siamese_loss_func(z_per_dp0, z_per_dp1, -1) # dissimilarity
 		siamese_loss = sim_loss + dis_loss
 
-		siamese_loss.backward()
+		siamese_loss.backward(retain_graph=True)
 		siamese_train_loss += siamese_loss.data[0].item()
 
+		# BCE expression loss
+
+
+		expression_loss = 0
+		if dp0_ide == '01': #neutral
+			expression_loss += nn.BCELoss(z_exp_dp0, neutral_target)
+		else: #smile
+			expression_loss += nn.BCELoss(z_exp_dp0, smile_target)
+
+		if dp9_ide == '01': #neutral
+			expression_loss += nn.BCELoss(z_exp_dp9, neutral_target)
+		else: #smile
+			expression_loss += nn.BCELoss(z_exp_dp9, smile_target)
+
+		if dp1_ide == '01': #neutral
+			expression_loss += nn.BCELoss(z_exp_dp1, neutral_target)
+		else: #smile
+			expression_loss += nn.BCELoss(z_exp_dp1, smile_target)
+
+		expression_loss.backward()
+		expression_train_loss += expression_loss[0].item()
+
+
+
 		optimizer.step()
-		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tReconLoss: {:.6f}\tSimLoss: {:.6f}\tDisLoss: {:.6f}'.format(
+		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tReconLoss: {:.4f}\tSimLoss: {:.4f}\tDisLoss: {:.4f}\tExpLoss: {:.4f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
-			100. * batch_idx / len(dataloader),
-			recon_loss.data[0].item() / opt.batchSize, sim_loss.data[0].item() / opt.batchSize, dis_loss.data[0].item() / opt.batchSize))
-			#loss is calculated for each img, so divide by batch size to get loss for the batch
+			 100. * batch_idx / len(dataloader),
+			  recon_loss.data[0].item() / opt.batchSize, sim_loss.data[0].item() / opt.batchSize,
+			   dis_loss.data[0].item() / opt.batchSize, expression_loss[0].item() / opt.batchSize))
+			#loss is calculated for each img, so divide by batch size to get average loss for the batch
 
 	lossfile.write('Epoch: {} Recon: {:.4f}\n'.format(epoch, recon_train_loss / (len(dataloader) * opt.batchSize)))
 	lossfile.write('Epoch: {} SiameseSim: {:.4f} SiameseDis: {:.4f}\n'.format(epoch, sim_loss.data[0].item() / opt.batchSize, 
 		dis_loss.data[0].item() / opt.batchSize))
+	lossfile.write('Epoch: {} Expression: {:.4f}\n'.format(epoch, expression_train_loss / (len(dataloader) * opt.batchSize)))
 
 
-	print('====> Epoch: {} Average recon loss: {:.4f} Average siamese loss: {:.4f}'.format(
-		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize), siamese_train_loss / (len(dataloader) * opt.batchSize)))
+	print('====> Epoch: {} Avg recon loss: {:.4f} Avg siamese loss: {:.4f} Avg exp loss: {:.4f}'.format(
+		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize), siamese_train_loss / (len(dataloader) * opt.batchSize),
+		   expression_train_loss / (len(dataloader) * opt.batchSize)))
 			#divide by (batch_size * num_batches) to get loss for the epoch
 
 
@@ -441,19 +471,16 @@ def test(epoch):
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
 	for batch_idx, data_point in enumerate(dataloader, 0):
 		gc.collect() # collect garbage
-
-		dp0_img, dp9_img, dp1_img = data_point
+		# sample the data points: 
+		dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide = data_point
 		dp0_img, dp9_img, dp1_img = parseSampledDataTripletMultipie(dp0_img, dp9_img, dp1_img)
 		if opt.cuda:
-			dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
+			dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide = setCuda(dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide)
 		dp0_img, dp9_img, dp1_img = setAsVariable(dp0_img, dp9_img, dp1_img )
 
 
 		z_dp9, z_per_dp9, z_exp_dp9 = model.get_latent_vectors(dp9_img)
 		z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
-
-		optimizer.zero_grad()
-		model.zero_grad()
 
 		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
 
@@ -477,8 +504,6 @@ def test(epoch):
 		# calc reconstruction loss (dp0 only)
 
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
-		optimizer.zero_grad()
-		recon_loss.backward(retain_graph=True)
 		recon_test_loss += recon_loss.data[0].item()
 
 		# calc siamese loss
@@ -487,12 +512,33 @@ def test(epoch):
 		dis_loss = siamese_loss_func(z_exp_dp0, z_exp_dp9, -1) + siamese_loss_func(z_per_dp0, z_per_dp1, -1) # dissimilarity
 		siamese_loss = sim_loss + dis_loss
 
-		siamese_loss.backward()
 		siamese_test_loss = siamese_loss.data[0].item()
 
 
-	print('====> Test set recon loss: {:.4f}\tSiamese loss:  {:.4f}'.format(recon_test_loss / (opt.batchSize * len(dataloader)), 
-		siamese_test_loss / (opt.batchSize * len(dataloader))))
+		# BCE expression loss
+
+
+		expression_loss = 0
+		if dp0_ide == '01': #neutral
+			expression_loss += nn.BCELoss(z_exp_dp0, neutral_target)
+		else: #smile
+			expression_loss += nn.BCELoss(z_exp_dp0, smile_target)
+
+		if dp9_ide == '01': #neutral
+			expression_loss += nn.BCELoss(z_exp_dp9, neutral_target)
+		else: #smile
+			expression_loss += nn.BCELoss(z_exp_dp9, smile_target)
+
+		if dp1_ide == '01': #neutral
+			expression_loss += nn.BCELoss(z_exp_dp1, neutral_target)
+		else: #smile
+			expression_loss += nn.BCELoss(z_exp_dp1, smile_target)
+
+		expression_train_loss += expression_loss[0].item()
+
+
+	print('====> Test set recon loss: {:.4f}\tSiamese loss:  {:.4f}\t Exp loss:'.format(recon_test_loss / (opt.batchSize * len(dataloader)), 
+		siamese_test_loss / (opt.batchSize * len(dataloader)), expression_test_loss / (opt.batchSize * len(dataloader))))
 
 
 def load_last_model():

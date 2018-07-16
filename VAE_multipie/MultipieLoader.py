@@ -154,6 +154,9 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
 
     def fareloader_expression_triplet(self, imgPath0, imgPath9, imgPath1):
         resize=self.resize
+        ide0 = 0
+        ide9 = 0
+        ide1 = 0
         with open(imgPath0, 'rb') as f0:
             with Image.open(f0) as img0:
                 img0 = img0.convert('RGB')
@@ -167,6 +170,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
                 if resize:
                     img0 = img0.resize((resize, resize),Image.ANTIALIAS)
                 img0 = np.array(img0)
+                ide1 = ide
         with open(imgPath9, 'rb') as f9:
             with Image.open(f9) as img9:
                 img9 = img9.convert('RGB')
@@ -179,6 +183,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
                 if resize:
                     img9 = img9.resize((resize, resize),Image.ANTIALIAS)
                 img9 = np.array(img9)
+                ide9 = ide
         with open(imgPath1, 'rb') as f1:
             with Image.open(f1) as img1:
                 img1 = img1.convert('RGB')
@@ -192,7 +197,8 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
                 if resize:
                     img1 = img1.resize((resize, resize),Image.ANTIALIAS)
                 img1 = np.array(img1)
-        return img0, img9, img1
+                ide0 = ide
+        return img0, img9, img1, ide0, ide9, ide1
 
 
     def getCoindex9(self, index):
