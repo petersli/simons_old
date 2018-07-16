@@ -118,9 +118,9 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
         imgPath9 = self.imgs[coindex9]
         imgPath1 = self.imgs[coindex1]
 
-        img0,img9,img1 = self.loader(imgPath0, imgPath9, imgPath1)
+        img0, img9, img1, ide0, ide9, ide1 = self.loader(imgPath0, imgPath9, imgPath1)
 
-        return img0, img9, img1
+        return img0, img9, img1, ide0, ide9, ide1
 
     def __len__(self):
         return len(self.imgs)
