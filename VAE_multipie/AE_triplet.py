@@ -404,14 +404,14 @@ def train(epoch):
 			expression_loss = BCE(z_exp_dp0, smile_target)
 
 		if dp9_ide == '01': #neutral
-			expression_loss += BCE(z_exp_dp9, neutral_target)
+			expression_loss += BCE(z_exp_dp9, neutral_target).item()
 		else: #smile
-			expression_loss += BCE(z_exp_dp9, smile_target)
+			expression_loss += BCE(z_exp_dp9, smile_target).item()
 
 		if dp1_ide == '01': #neutral
-			expression_loss += BCE(z_exp_dp1, neutral_target)
+			expression_loss += BCE(z_exp_dp1, neutral_target).item()
 		else: #smile
-			expression_loss += BCE(z_exp_dp1, smile_target)
+			expression_loss += BCE(z_exp_dp1, smile_target).item()
 
 		expression_loss.backward()
 		expression_train_loss += expression_loss[0].item()
@@ -522,19 +522,19 @@ def test(epoch):
 
 		expression_loss = 0
 		if dp0_ide == '01': #neutral
-			expression_loss += BCE(z_exp_dp0, neutral_target)
+			expression_loss = BCE(z_exp_dp0, neutral_target)
 		else: #smile
-			expression_loss += BCE(z_exp_dp0, smile_target)
+			expression_loss = BCE(z_exp_dp0, smile_target)
 
 		if dp9_ide == '01': #neutral
-			expression_loss += BCE(z_exp_dp9, neutral_target)
+			expression_loss += BCE(z_exp_dp9, neutral_target).item()
 		else: #smile
-			expression_loss += BCE(z_exp_dp9, smile_target)
+			expression_loss += BCE(z_exp_dp9, smile_target).item()
 
 		if dp1_ide == '01': #neutral
-			expression_loss += BCE(z_exp_dp1, neutral_target)
+			expression_loss += BCE(z_exp_dp1, neutral_target).item()
 		else: #smile
-			expression_loss += BCE(z_exp_dp1, smile_target)
+			expression_loss += BCE(z_exp_dp1, smile_target).item()
 
 		expression_train_loss += expression_loss[0].item()
 
