@@ -397,13 +397,11 @@ def train(epoch):
 		siamese_train_loss += siamese_loss.data[0].item()
 
 		# BCE expression loss
-
+		print(z_exp_dp0, neutral_target)
 		if dp0_ide == '01': #neutral
 			expression_loss = BCE(z_exp_dp0, neutral_target)
-			print(z_exp_dp0, neutral_target)
 		else: #smile
 			expression_loss = BCE(z_exp_dp0, smile_target)
-			print(z_exp_dp0, neutral_target)
 
 		if dp9_ide == '01': #neutral
 			expression_loss = expression_loss + BCE(z_exp_dp9, neutral_target)
