@@ -519,6 +519,9 @@ def test(epoch):
 
 		# BCE expression loss
 
+		smile_target = torch.ones(z_exp_dp0.size()).cuda()
+		neutral_target = torch.zeros(z_exp_dp0.size()).cuda()
+
 		if dp0_ide == '01': #neutral
 			expression_loss = BCE(z_exp_dp0, neutral_target)
 		else: #smile
