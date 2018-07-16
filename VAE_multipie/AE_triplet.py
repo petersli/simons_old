@@ -214,9 +214,9 @@ class AE(nn.Module):
 
 		# DISENTANGLING
 
-		# self.disentangle1 = nn.Linear(latent_variable_size, latent_variable_size / 2)
-		# self.disentangle2 = nn.Linear(latent_variable_size, latent_variable_size / 2)
-		# self.disentangle3 = nn.Linear(latent_variable_size, latent_variable_size)
+		self.disentangle1 = nn.Linear(latent_variable_size, latent_variable_size / 2)
+		self.disentangle2 = nn.Linear(latent_variable_size, latent_variable_size / 2)
+		self.disentangle3 = nn.Linear(latent_variable_size, latent_variable_size)
 
 		# DECODER
 
@@ -273,7 +273,7 @@ class AE(nn.Module):
 		h5 = self.leakyrelu(self.bn5(self.e5(h4)))
 		h5 = h5.view(-1, 64*2*2)
 
-		return self.fc1(h5)
+		return self.sigmoid(self.fc1(h5))
 
 	def decode(self, z):
 		#print("decode")
@@ -292,7 +292,7 @@ class AE(nn.Module):
 		z_exp = z[:,64:128].contiguous()  # part of z representing the expression
 		return z, z_per, z_exp
 
-		# z_enc = self.sigmoid(self.encode(x))
+		# z_enc = self.encode(x)
 		# z_per = self.relu(self.disentangle1(z_enc))
 		# z_exp = self.relu(self.disentangle2(z_enc))	
 		# z_dec = self.relu(self.disentangle3(torch.cat((z_per, z_exp), dim=1)))
@@ -332,7 +332,7 @@ def siamese_loss_func(z1, z2, label):
 		return siamese_func(z1, z2, target=y)
 
 def BCE(x, target):
-	BCE_func = nn.BCELoss()
+	BCE_func = nn.BCEWithLogitsLoss() # combined sigmoid and BCE into one layer
 	return BCE_func(x, target)
 
 

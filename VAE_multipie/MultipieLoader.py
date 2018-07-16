@@ -198,7 +198,8 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
                     img1 = img1.resize((resize, resize),Image.ANTIALIAS)
                 img1 = np.array(img1)
                 ide0 = ide
-        return img0, img9, img1, ide0, ide9, ide1
+        return img0, img9, img1, ide0, ide9, ide1  
+        # I'm returning the ide's to use them for training with expression labeling; remove if not needed
 
 
     def getCoindex9(self, index):
