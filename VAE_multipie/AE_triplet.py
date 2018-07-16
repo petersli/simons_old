@@ -419,7 +419,7 @@ def train(epoch):
 
 
 		optimizer.step()
-		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tReconLoss: {:.4f}\tSimLoss: {:.4f}\tDisLoss: {:.4f}\tExpLoss: {:.4f}'.format(
+		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tReconLoss: {:.6f}\tSimLoss: {:.6f}\tDisLoss: {:.6f}\tExpLoss: {:.6f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
 			 100. * batch_idx / len(dataloader),
 			  recon_loss.data[0].item() / opt.batchSize, sim_loss.data[0].item() / opt.batchSize,
