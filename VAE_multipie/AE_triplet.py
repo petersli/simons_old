@@ -398,9 +398,8 @@ def train(epoch):
 		# BCE expression loss
 
 
-		expression_loss = 0
 		if dp0_ide == '01': #neutral
-			expression_loss += BCE(z_exp_dp0, neutral_target)
+			expression_loss = BCE(z_exp_dp0, neutral_target)
 		else: #smile
 			expression_loss += BCE(z_exp_dp0, smile_target)
 
