@@ -342,9 +342,6 @@ lossfile = open(opt.output_dir_prefix + "losses.txt", "w")
 sim_loss = 0
 dis_loss = 0
 
-smile_target = torch.ones(opt.batchSize, model.latent_variable_size/2).cuda()
-neutral_target = torch.zeros(opt.batchSize, model.latent_variable_size/2).cuda()
-
 def train(epoch):
 	print("train")
 	model.train()
@@ -398,7 +395,8 @@ def train(epoch):
 
 		# BCE expression loss
 		
-
+		smile_target = torch.ones(z_exp_dp0.size()).cuda()
+		neutral_target = torch.zeros(z_exp_dp0.size()).cuda()
 
 		if dp0_ide == '01': #neutral
 			expression_loss = BCE(z_exp_dp0, neutral_target)
