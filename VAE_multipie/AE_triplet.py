@@ -331,6 +331,9 @@ def siamese_loss_func(z1, z2, label):
 		y = y * -1
 		return siamese_func(z1, z2, target=y)
 
+def BCE(x, target):
+	return nn.BCELoss(x, target)
+
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
@@ -397,19 +400,19 @@ def train(epoch):
 
 		expression_loss = 0
 		if dp0_ide == '01': #neutral
-			expression_loss += nn.BCELoss(z_exp_dp0, neutral_target)
+			expression_loss += BCE(z_exp_dp0, neutral_target)
 		else: #smile
-			expression_loss += nn.BCELoss(z_exp_dp0, smile_target)
+			expression_loss += BCE(z_exp_dp0, smile_target)
 
 		if dp9_ide == '01': #neutral
-			expression_loss += nn.BCELoss(z_exp_dp9, neutral_target)
+			expression_loss += BCE(z_exp_dp9, neutral_target)
 		else: #smile
-			expression_loss += nn.BCELoss(z_exp_dp9, smile_target)
+			expression_loss += BCE(z_exp_dp9, smile_target)
 
 		if dp1_ide == '01': #neutral
-			expression_loss += nn.BCELoss(z_exp_dp1, neutral_target)
+			expression_loss += BCE(z_exp_dp1, neutral_target)
 		else: #smile
-			expression_loss += nn.BCELoss(z_exp_dp1, smile_target)
+			expression_loss += BCE(z_exp_dp1, smile_target)
 
 		expression_loss.backward()
 		expression_train_loss += expression_loss[0].item()
@@ -520,19 +523,19 @@ def test(epoch):
 
 		expression_loss = 0
 		if dp0_ide == '01': #neutral
-			expression_loss += nn.BCELoss(z_exp_dp0, neutral_target)
+			expression_loss += BCE(z_exp_dp0, neutral_target)
 		else: #smile
-			expression_loss += nn.BCELoss(z_exp_dp0, smile_target)
+			expression_loss += BCE(z_exp_dp0, smile_target)
 
 		if dp9_ide == '01': #neutral
-			expression_loss += nn.BCELoss(z_exp_dp9, neutral_target)
+			expression_loss += BCE(z_exp_dp9, neutral_target)
 		else: #smile
-			expression_loss += nn.BCELoss(z_exp_dp9, smile_target)
+			expression_loss += BCE(z_exp_dp9, smile_target)
 
 		if dp1_ide == '01': #neutral
-			expression_loss += nn.BCELoss(z_exp_dp1, neutral_target)
+			expression_loss += BCE(z_exp_dp1, neutral_target)
 		else: #smile
-			expression_loss += nn.BCELoss(z_exp_dp1, smile_target)
+			expression_loss += BCE(z_exp_dp1, smile_target)
 
 		expression_train_loss += expression_loss[0].item()
 
