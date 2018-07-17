@@ -495,8 +495,10 @@ def test(epoch):
 		cosine_test_loss = sim_loss.data[0].item()
 
 		# calc L1 loss
+		z_per_dp0_target = z_per_dp0.requires_grad=False
+		z_exp_dp0_target = z_exp_dp0.requires_grad=False
 
-		L1_loss = L1(z_per_dp9, z_per_dp0.requires_grad=False) + L1(z_exp_dp1, z_exp_dp0.requires_grad=False)
+		L1_loss = L1(z_per_dp9, z_per_dp0_target) + L1(z_exp_dp1, z_exp_dp0_target)
 
 		# calc triplet loss
 
