@@ -561,7 +561,7 @@ def start_training():
 		recon_loss, siamese_loss = train(epoch)
 		torch.save(model.state_dict(),
 		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_Siamese_{:.4f}.pth'.format(epoch, recon_loss, siamese_loss))
-		if epoch % 10 == 0 or epoch == 0:
+		if epoch % 10 == 0 or epoch == 1:
 			test(epoch)
 
 	lossfile.close()
