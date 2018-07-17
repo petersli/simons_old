@@ -319,8 +319,7 @@ def triplet_loss_func(a, p, n):
 	return triplet_func(a, p, n)
 
 def L1(x, y):
-	L1loss = nn.L1Loss()
-	return L1loss(x, y)
+	return torch.mean(torch.abs(x - y))
 
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
@@ -382,10 +381,8 @@ def train(epoch):
 		sim_loss.backward(retain_graph=True)
 
 		# calc L1 loss
-		z_per_dp0_target = z_per_dp0.requires_grad=False
-		z_exp_dp0_target = z_exp_dp0.requires_grad=False
-
-		L1_loss = L1(z_per_dp9, z_per_dp0_target) + L1(z_exp_dp1, z_exp_dp0_target)
+	
+		L1_loss = L1(z_per_dp9, z_per_dp0) + L1(z_exp_dp1, z_exp_dp0)
 		L1_loss.backward(retain_graph=True)
 
 		# calc triplet loss
@@ -497,10 +494,8 @@ def test(epoch):
 		cosine_test_loss = sim_loss.data[0].item()
 
 		# calc L1 loss
-		z_per_dp0_target = z_per_dp0.requires_grad=False
-		z_exp_dp0_target = z_exp_dp0.requires_grad=False
-
-		L1_loss = L1(z_per_dp9, z_per_dp0_target) + L1(z_exp_dp1, z_exp_dp0_target)
+	
+		L1_loss = L1(z_per_dp9, z_per_dp0) + L1(z_exp_dp1, z_exp_dp0)
 
 		# calc triplet loss
 
