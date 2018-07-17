@@ -465,7 +465,7 @@ def test(epoch):
 	model.eval()
 	recon_test_loss = 0
 	siamese_test_loss = 0
-	expression_train_loss = 0
+	expression_test_loss = 0
 	dataroot = random.sample(TestingData,1)[0]
 
 	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
@@ -538,7 +538,7 @@ def test(epoch):
 		else: #smile
 			expression_loss = expression_loss + BCE(z_exp_dp1, smile_target)
 
-		expression_train_loss += expression_loss[0].item()
+		expression_test_loss += expression_loss[0].item()
 
 
 	print('====> Test set recon loss: {:.4f}\tSiamese loss:  {:.4f}\t Exp loss:'.format(recon_test_loss / (opt.batchSize * len(dataloader)), 
