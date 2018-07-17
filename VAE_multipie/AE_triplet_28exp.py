@@ -377,7 +377,7 @@ def train(epoch):
 		sim_loss = cosine_loss_func(z_per_dp0, z_per_dp9, 1) + cosine_loss_func(z_exp_dp0, z_exp_dp1, 1) # similarity
 		#dis_loss = cosine_loss_func(z_exp_dp0, z_exp_dp9, -1) + cosine_loss_func(z_per_dp0, z_per_dp1, -1) # dissimilarity
 
-		cosine_train_loss += simloss.data[0].item()
+		cosine_train_loss += sim_loss.data[0].item()
 
 		cosine_loss.backward(retain_graph=True)
 
