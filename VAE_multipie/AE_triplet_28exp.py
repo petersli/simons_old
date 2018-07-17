@@ -299,20 +299,28 @@ def recon_loss_func(recon_x, x):
 	recon_func.size_average = False
 	return recon_func(recon_x, x)
 
-def siamese_loss_func(z1, z2, label):
-	siamese_func = nn.CosineEmbeddingLoss()
-	siamese_func.size_average = False
-	siamese_func.margin = 0.5
+def cosine_loss_func(z1, z2, label):
+	cosine_func = nn.CosineEmbeddingLoss()
+	cosine_func.size_average = False
+	cosine_func.margin = 0.5
 	#y = torch.ones_like(z2)
 	y = torch.ones(z1.size()[0]).cuda()
 
 	#size of target has to match size of inputs
 	y.requires_grad_(False)
 	if label == 1: # measure similarity
-		return siamese_func(z1, z2, target=y)
+		return cosine_func(z1, z2, target=y)
 	elif label == -1: # measure dissimilarity
 		y = y * -1
-		return siamese_func(z1, z2, target=y)
+		return cosine_func(z1, z2, target=y)
+
+def triplet_loss_func(a, p, n):
+	triplet_func = nn.TripletMarginLoss()
+	return triplet_func(a, p, n)
+
+def L1(x, y):
+	L1loss = nn.L1Loss()
+	return L1loss(x, y)
 
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
@@ -326,7 +334,8 @@ def train(epoch):
 	print("train")
 	model.train()
 	recon_train_loss = 0
-	siamese_train_loss = 0
+	cosine_train_loss = 0
+	triplet_train_loss = 0
 	dataroot = random.sample(TrainingData,1)[0]
 
 	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
@@ -363,29 +372,44 @@ def train(epoch):
 		recon_loss.backward(retain_graph=True)
 		recon_train_loss += recon_loss.data[0].item()
 
-		# calc siamese loss
+		# calc cosine loss
 
-		sim_loss = siamese_loss_func(z_per_dp0, z_per_dp9, 1) + siamese_loss_func(z_exp_dp0, z_exp_dp1, 1) # similarity
-		dis_loss = siamese_loss_func(z_exp_dp0, z_exp_dp9, -1) + siamese_loss_func(z_per_dp0, z_per_dp1, -1) # dissimilarity
-		siamese_loss = sim_loss + dis_loss
+		sim_loss = cosine_loss_func(z_per_dp0, z_per_dp9, 1) + cosine_loss_func(z_exp_dp0, z_exp_dp1, 1) # similarity
+		#dis_loss = cosine_loss_func(z_exp_dp0, z_exp_dp9, -1) + cosine_loss_func(z_per_dp0, z_per_dp1, -1) # dissimilarity
 
-		siamese_loss.backward()
-		siamese_train_loss += siamese_loss.data[0].item()
+		cosine_train_loss += simloss.data[0].item()
+
+		cosine_loss.backward(retain_graph=True)
+
+		# calc L1 loss
+
+		L1_loss = L1(z_per_dp0, z_per_dp9) + L1(z_exp_dp0, z_exp_dp1)
+		L1_loss.backward(retain_graph=True)
+
+		# calc triplet loss
+
+		triplet_loss = triplet_loss_func(z_per_dp0, z_per_dp9, z_per_dp1) + triplet_loss_func(z_exp_dp0, z_exp_dp1, z_exp_dp9)
+			# triplet(anchor, positive, negative)
+
+		triplet_train_loss = triplet_loss.data[0].item()
+		triplet_loss.backward()
+		
 
 		optimizer.step()
-		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tReconLoss: {:.6f}\tSimLoss: {:.6f}\tDisLoss: {:.6f}'.format(
+		print('Train Epoch: {} [{}/{} ({:.0f}%)]\tRecon: {:.6f}\tCosine: {:.6f}\tTriplet: {:.6f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
 			100. * batch_idx / len(dataloader),
-			recon_loss.data[0].item() / opt.batchSize, sim_loss.data[0].item() / opt.batchSize, dis_loss.data[0].item() / opt.batchSize))
+			recon_loss.data[0].item() / opt.batchSize, sim_loss.data[0].item() / opt.batchSize, triplet_loss.data[0].item() / opt.batchSize))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
 	lossfile.write('Epoch: {} Recon: {:.4f}\n'.format(epoch, recon_train_loss / (len(dataloader) * opt.batchSize)))
-	lossfile.write('Epoch: {} SiameseSim: {:.4f} SiameseDis: {:.4f}\n'.format(epoch, sim_loss.data[0].item() / opt.batchSize, 
-		dis_loss.data[0].item() / opt.batchSize))
+	lossfile.write('Epoch: {} cosineSim: {:.4f} triplet: {:.4f}\n'.format(epoch, sim_loss.data[0].item() / opt.batchSize, 
+		triplet_loss.data[0].item() / opt.batchSize))
 
 
-	print('====> Epoch: {} Average recon loss: {:.4f} Average siamese loss: {:.4f}'.format(
-		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize), siamese_train_loss / (len(dataloader) * opt.batchSize)))
+	print('====> Epoch: {} Average recon loss: {:.4f} Average cosine loss: {:.4f} Average triplet: {:.4f}'.format(
+		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize), cosine_train_loss / (len(dataloader) * opt.batchSize), 
+		  triplet_train_loss / (len(dataloader) * opt.batchSize)))
 			#divide by (batch_size * num_batches) to get loss for the epoch
 
 
@@ -408,14 +432,15 @@ def train(epoch):
 	print('Data and reconstructions saved.')
 
 
-	return recon_train_loss / (len(dataloader) * opt.batchSize), siamese_train_loss / (len(dataloader) * opt.batchSize)
+	return recon_train_loss / (len(dataloader) * opt.batchSize), triplet_train_loss / (len(dataloader) * opt.batchSize)
 
 
 def test(epoch):
 	print("test")
 	model.eval()
 	recon_test_loss = 0
-	siamese_test_loss = 0
+	cosine_test_loss = 0
+	triplet_test_loss = 0
 	dataroot = random.sample(TestingData,1)[0]
 
 	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
@@ -461,21 +486,26 @@ def test(epoch):
 
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 		optimizer.zero_grad()
-		recon_loss.backward(retain_graph=True)
 		recon_test_loss += recon_loss.data[0].item()
 
-		# calc siamese loss
+		# calc cosine loss
 
-		sim_loss = siamese_loss_func(z_per_dp0, z_per_dp9, 1) + siamese_loss_func(z_exp_dp0, z_exp_dp1, 1) # similarity
-		dis_loss = siamese_loss_func(z_exp_dp0, z_exp_dp9, -1) + siamese_loss_func(z_per_dp0, z_per_dp1, -1) # dissimilarity
-		siamese_loss = sim_loss + dis_loss
+		sim_loss = cosine_loss_func(z_per_dp0, z_per_dp9, 1) + cosine_loss_func(z_exp_dp0, z_exp_dp1, 1) # similarity
 
-		siamese_loss.backward()
-		siamese_test_loss = siamese_loss.data[0].item()
+		cosine_test_loss = sim_loss.data[0].item()
 
+		# calc L1 loss
 
-	print('====> Test set recon loss: {:.4f}\tSiamese loss:  {:.4f}'.format(recon_test_loss / (opt.batchSize * len(dataloader)), 
-		siamese_test_loss / (opt.batchSize * len(dataloader))))
+		L1_loss = L1(z_per_dp0, z_per_dp9) + L1(z_exp_dp0, z_exp_dp1)
+
+		# calc triplet loss
+
+		triplet_loss = triplet_loss_func(z_per_dp0, z_per_dp9, z_per_dp1) + triplet_loss_func(z_exp_dp0, z_exp_dp1, z_exp_dp9)
+			# triplet(anchor, positive, negative)
+		triplet_test_loss = triplet_loss.data[0].item()
+		
+	print('====> Test set recon loss: {:.4f}\ttriplet loss:  {:.4f}'.format(recon_test_loss / (opt.batchSize * len(dataloader)), 
+		triplet_test_loss / (opt.batchSize * len(dataloader))))
 
 
 def load_last_model():
@@ -491,10 +521,10 @@ def start_training():
 
 
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
-		recon_loss, siamese_loss = train(epoch)
+		recon_loss, triplet_loss = train(epoch)
 		torch.save(model.state_dict(),
-		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_Siamese_{:.4f}.pth'.format(epoch, recon_loss, siamese_loss))
-		if epoch % 10 == 0:
+		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_cosine_{:.4f}.pth'.format(epoch, recon_loss, triplet_loss))
+		if epoch % 10 == 0 or epoch == 1:
 			test(epoch)
 
 	lossfile.close()
