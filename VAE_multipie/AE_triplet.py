@@ -465,6 +465,7 @@ def test(epoch):
 	model.eval()
 	recon_test_loss = 0
 	siamese_test_loss = 0
+	expression_train_loss = 0
 	dataroot = random.sample(TestingData,1)[0]
 
 	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
@@ -560,7 +561,7 @@ def start_training():
 		recon_loss, siamese_loss = train(epoch)
 		torch.save(model.state_dict(),
 		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_Siamese_{:.4f}.pth'.format(epoch, recon_loss, siamese_loss))
-		if epoch % 10 == 0:
+		if epoch % 10 == 0 or epoch == 0:
 			test(epoch)
 
 	lossfile.close()
