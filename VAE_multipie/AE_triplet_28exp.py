@@ -383,7 +383,7 @@ def train(epoch):
 
 		# calc L1 loss
 
-		L1_loss = L1(z_per_dp0, z_per_dp9) + L1(z_exp_dp0, z_exp_dp1)
+		L1_loss = L1(z_per_dp9, z_per_dp0.requires_grad=False) + L1(z_exp_dp1, z_exp_dp0.requires_grad=False)
 		L1_loss.backward(retain_graph=True)
 
 		# calc triplet loss
@@ -496,7 +496,7 @@ def test(epoch):
 
 		# calc L1 loss
 
-		L1_loss = L1(z_per_dp0, z_per_dp9) + L1(z_exp_dp0, z_exp_dp1)
+		L1_loss = L1(z_per_dp9, z_per_dp0.requires_grad=False) + L1(z_exp_dp1, z_exp_dp0.requires_grad=False)
 
 		# calc triplet loss
 
