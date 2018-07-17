@@ -379,7 +379,7 @@ def train(epoch):
 
 		cosine_train_loss += sim_loss.data[0].item()
 
-		cosine_loss.backward(retain_graph=True)
+		sim_loss.backward(retain_graph=True)
 
 		# calc L1 loss
 
