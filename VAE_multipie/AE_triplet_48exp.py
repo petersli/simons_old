@@ -387,7 +387,7 @@ def train(epoch):
 		triplet_loss = triplet_loss_func(z_per_dp0, z_per_dp9, z_per_dp1) + triplet_loss_func(z_exp_dp0, z_exp_dp1, z_exp_dp9)
 			# triplet(anchor, positive, negative)
 
-		triplet_train_loss = triplet_loss.data[0].item()
+		triplet_train_loss += triplet_loss.data[0].item()
 
 		# calc gradients for all losses except swap
 
