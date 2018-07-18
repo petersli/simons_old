@@ -441,9 +441,9 @@ def train(epoch):
 		triplet_loss.data[0].item() / opt.batchSize))
 
 
-	print('====> Epoch: {} Average recon loss: {:.4f} Average cosine loss: {:.4f} Average triplet: {:.4f}'.format(
-		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize), cosine_train_loss / (len(dataloader) * opt.batchSize), 
-		  triplet_train_loss / (len(dataloader) * opt.batchSize)))
+	print('====> Epoch: {} Average recon loss: {:.4f} Average cosine loss: {:.4f} Average triplet: {:.4f} Average swap: {:.4f}'.format(
+		  epoch, recon_train_loss / len(dataloader), cosine_train_loss / len(dataloader), 
+		  triplet_train_loss / len(dataloader), swap_train_loss / len(dataloader)))
 			#divide by (batch_size * num_batches) to get loss for the epoch
 
 
