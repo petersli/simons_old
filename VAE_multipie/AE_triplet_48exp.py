@@ -410,16 +410,16 @@ def train(epoch):
 		recon_per1_exp0 = model.decode(z_per1_exp0)
 
 
-		swap_loss1 = recon_loss(z_per0_exp9, dp9_img)
+		swap_loss1 = recon_loss_func(z_per0_exp9, dp9_img)
 		swap_loss1.backward(retain_graph=True)
 
-		swap_loss2 = recon_loss(z_per0_exp1, dp0_img)
+		swap_loss2 = recon_loss_func(z_per0_exp1, dp0_img)
 		swap_loss2.backward(retain_graph=True)
 
-		swap_loss3 = recon_loss(z_per9_exp0, dp0_img)
+		swap_loss3 = recon_loss_func(z_per9_exp0, dp0_img)
 		swap_loss3.backward(retain_graph=True)
 
-		swap_loss4 = recon_loss(z_per1_exp0, dp1_img)
+		swap_loss4 = recon_loss_func(z_per1_exp0, dp1_img)
 		swap_loss4.backward()
 
 		swap_loss = swap_loss1 + swap_loss2 + swap_loss3 + swap_loss4
