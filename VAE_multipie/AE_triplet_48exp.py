@@ -437,8 +437,8 @@ def train(epoch):
 
 	lossfile.write('Epoch: {} Recon: {:.4f} Swap: {:.4f}\n'.format(epoch, recon_train_loss / len(dataloader), 
 		swap_train_loss / len(dataloader)))
-	lossfile.write('Epoch: {} cosineSim: {:.4f} triplet: {:.4f}\n'.format(epoch, sim_loss.data[0].item() / opt.batchSize, 
-		triplet_loss.data[0].item() / opt.batchSize))
+	lossfile.write('Epoch: {} cosineSim: {:.4f} triplet: {:.4f}\n'.format(epoch, cosine_train_loss.data[0].item() / opt.batchSize, 
+		triplet_train_loss.data[0].item() / opt.batchSize))
 
 
 	print('====> Epoch: {} Average recon loss: {:.4f} Average cosine loss: {:.4f} Average triplet: {:.4f} Average swap: {:.4f}'.format(
