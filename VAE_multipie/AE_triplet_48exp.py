@@ -564,8 +564,6 @@ def test(epoch):
 		opt.dirImageoutput, 
 		filename='e_'+str(epoch)+'_test_per1_exp9', n_sample = 18, nrow=5, normalize=False)
 
-		print('Test images saved')
-
 
 		# calc reconstruction loss (dp0 only)
 
@@ -589,6 +587,7 @@ def test(epoch):
 			# triplet(anchor, positive, negative)
 		triplet_test_loss = triplet_loss.data[0].item()
 		
+	print('Test images saved')
 	print('====> Test set recon loss: {:.4f}\ttriplet loss:  {:.4f}'.format(recon_test_loss, triplet_test_loss))
 
 
