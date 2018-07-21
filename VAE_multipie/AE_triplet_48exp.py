@@ -356,7 +356,7 @@ def train(epoch):
 		# dp0_img: image of data point 0
 		# dp9_img: image of data point 9, which is different in ``expression'' compare to dp0, same person as dp0
 		# dp1_img: image of data point 1, which is different in ``person'' compare to dp0, same expression as dp0
-		dp0_img, dp9_img, dp1_img = data_point
+		dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide = data_point
 		dp0_img, dp9_img, dp1_img = parseSampledDataTripletMultipie(dp0_img, dp9_img, dp1_img)
 		if opt.cuda:
 			dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
@@ -514,7 +514,7 @@ def test(epoch):
 	for batch_idx, data_point in enumerate(dataloader, 0):
 		gc.collect() # collect garbage
 
-		dp0_img, dp9_img, dp1_img = data_point
+		dp0_img, dp9_img, dp1_img, dp0_ide, dp9_ide, dp1_ide = data_point
 		dp0_img, dp9_img, dp1_img = parseSampledDataTripletMultipie(dp0_img, dp9_img, dp1_img)
 		if opt.cuda:
 			dp0_img, dp9_img, dp1_img = setCuda(dp0_img, dp9_img, dp1_img)
