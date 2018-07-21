@@ -467,14 +467,14 @@ def train(epoch):
 
 	lossfile.write('Epoch:{} Recon:{:.6f} Swap:{:.6f} ExpLoss:{:.6f}\n'.format(epoch, recon_train_loss, 
 		swap_train_loss, expression_train_loss))
-	lossfile.write('Epoch:{} cosineSim:{:.6f} triplet:{:.6f}\n'.format(epoch, cosine_train_loss.data[0].item(), 
-		triplet_train_loss.data[0].item()))
+	lossfile.write('Epoch:{} cosineSim:{:.6f} triplet:{:.6f}\n'.format(epoch, cosine_train_loss, 
+		triplet_train_loss))
 
 
 	print('====> Epoch: {} Average recon loss: {:.6f} Average cosine loss: {:.6f} Average triplet: {:.6f} Average swap: {:.6f}'.format(
-		  epoch, recon_train_loss / len(dataloader), cosine_train_loss / len(dataloader), 
-		  triplet_train_loss / len(dataloader), swap_train_loss / len(dataloader)))
-			#divide by (batch_size * num_batches) to get loss for the epoch
+		  epoch, recon_train_loss, cosine_train_loss, 
+		  triplet_train_loss, swap_train_loss))
+			#divide by (batch_size * num_batches) to get average loss for the epoch
 
 
 	#data
@@ -591,8 +591,7 @@ def test(epoch):
 			# triplet(anchor, positive, negative)
 		triplet_test_loss = triplet_loss.data[0].item()
 		
-	print('====> Test set recon loss: {:.4f}\ttriplet loss:  {:.4f}'.format(recon_test_loss / (opt.batchSize * len(dataloader)), 
-		triplet_test_loss / (opt.batchSize * len(dataloader))))
+	print('====> Test set recon loss: {:.4f}\ttriplet loss:  {:.4f}'.format(recon_test_loss, triplet_test_loss))
 
 
 def load_last_model():
