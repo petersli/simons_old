@@ -322,6 +322,10 @@ def triplet_loss_func(a, p, n):
 def L1(x, y):
 	return torch.mean(torch.abs(x - y))
 
+def BCE(x, target):
+	BCE_func = nn.BCEWithLogitsLoss() # combined sigmoid and BCE into one layer
+	return BCE_func(x, target)
+
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
@@ -337,6 +341,7 @@ def train(epoch):
 	cosine_train_loss = 0
 	triplet_train_loss = 0
 	swap_train_loss = 0
+	expression_train_loss = 0
 	dataroot = random.sample(Data,1)[0]
 
 	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontalTrainTestSplit(opt, root=dataroot, resize=64)
@@ -392,9 +397,31 @@ def train(epoch):
 
 		triplet_train_loss += triplet_loss.data[0].item()
 
+		# BCE expression loss
+		
+		smile_target = torch.ones(z_exp_dp0.size()).cuda()
+		neutral_target = torch.zeros(z_exp_dp0.size()).cuda()
+
+		if dp0_ide == '01': #neutral
+			expression_loss = BCE(z_exp_dp0, neutral_target)
+		else: #smile
+			expression_loss = BCE(z_exp_dp0, smile_target)
+
+		if dp9_ide == '01': #neutral
+			expression_loss = expression_loss + BCE(z_exp_dp9, neutral_target)
+		else: #smile
+			expression_loss = expression_loss + BCE(z_exp_dp9, smile_target)
+
+		if dp1_ide == '01': #neutral
+			expression_loss = expression_loss + BCE(z_exp_dp1, neutral_target)
+		else: #smile
+			expression_loss = expression_loss + BCE(z_exp_dp1, smile_target)
+
+		expression_train_loss += expression_loss[0].item()
+
 		# calc gradients for all losses except swap
 
-		losses = L1_loss + sim_loss + triplet_loss
+		losses = L1_loss + sim_loss + triplet_loss + expression_loss
 		losses.backward(retain_graph=True)
 
 
@@ -438,10 +465,10 @@ def train(epoch):
 			recon_loss.data[0].item(), sim_loss.data[0].item(), triplet_loss.data[0].item(), swap_loss.data[0].item()))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
-	lossfile.write('Epoch:{} Recon:{:.6f} Swap:{:.6f}\n'.format(epoch, recon_train_loss / len(dataloader), 
-		swap_train_loss / len(dataloader)))
-	lossfile.write('Epoch:{} cosineSim:{:.6f} triplet:{:.6f}\n'.format(epoch, cosine_train_loss.data[0].item() / opt.batchSize, 
-		triplet_train_loss.data[0].item() / opt.batchSize))
+	lossfile.write('Epoch:{} Recon:{:.6f} Swap:{:.6f} ExpLoss:{:.6f}\n'.format(epoch, recon_train_loss, 
+		swap_train_loss, expression_train_loss))
+	lossfile.write('Epoch:{} cosineSim:{:.6f} triplet:{:.6f}\n'.format(epoch, cosine_train_loss.data[0].item(), 
+		triplet_train_loss.data[0].item()))
 
 
 	print('====> Epoch: {} Average recon loss: {:.6f} Average cosine loss: {:.6f} Average triplet: {:.6f} Average swap: {:.6f}'.format(
