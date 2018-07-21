@@ -132,26 +132,28 @@ def setAsDumbVariable(*args):
 
 
 # Training data folder list
-TrainingData = []
+Data = []
 #session 01
 
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_01_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_02_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_03_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_04_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_05_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_06_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_07_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_01_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_02_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_03_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_04_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_05_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_06_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_07_select/')
 
 #session 02
+
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_01_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_02_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_03_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_04_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_05_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_06_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_07_select/')
+
 '''
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_01_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_02_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_03_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_04_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_05_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_06_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_07_select/')
 #session 03
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_01_select/')
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_02_select/')
@@ -167,9 +169,10 @@ TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session0
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_06_select/')
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_07_select/')
 '''
-# Testing
-TestingData = []
-TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_select_test/')
+
+# Small Testing Set
+# TestingData = []
+# TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_select_test/')
 
 class AE(nn.Module):
 	def __init__(self, latent_variable_size):
@@ -334,9 +337,9 @@ def train(epoch):
 	cosine_train_loss = 0
 	triplet_train_loss = 0
 	swap_train_loss = 0
-	dataroot = random.sample(TrainingData,1)[0]
+	dataroot = random.sample(Data,1)[0]
 
-	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
+	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontalTrainTestSplit(opt, root=dataroot, resize=64)
 	print('# size of the current (sub)dataset is %d' %len(dataset))
  #   train_amount = train_amount + len(dataset)
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
@@ -435,13 +438,13 @@ def train(epoch):
 			recon_loss.data[0].item(), sim_loss.data[0].item(), triplet_loss.data[0].item(), swap_loss.data[0].item()))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
-	lossfile.write('Epoch: {} Recon: {:.4f} Swap: {:.4f}\n'.format(epoch, recon_train_loss / len(dataloader), 
+	lossfile.write('Epoch:{} Recon:{:.6f} Swap:{:.6f}\n'.format(epoch, recon_train_loss / len(dataloader), 
 		swap_train_loss / len(dataloader)))
-	lossfile.write('Epoch: {} cosineSim: {:.4f} triplet: {:.4f}\n'.format(epoch, cosine_train_loss.data[0].item() / opt.batchSize, 
+	lossfile.write('Epoch:{} cosineSim:{:.6f} triplet:{:.6f}\n'.format(epoch, cosine_train_loss.data[0].item() / opt.batchSize, 
 		triplet_train_loss.data[0].item() / opt.batchSize))
 
 
-	print('====> Epoch: {} Average recon loss: {:.4f} Average cosine loss: {:.4f} Average triplet: {:.4f} Average swap: {:.4f}'.format(
+	print('====> Epoch: {} Average recon loss: {:.6f} Average cosine loss: {:.6f} Average triplet: {:.6f} Average swap: {:.6f}'.format(
 		  epoch, recon_train_loss / len(dataloader), cosine_train_loss / len(dataloader), 
 		  triplet_train_loss / len(dataloader), swap_train_loss / len(dataloader)))
 			#divide by (batch_size * num_batches) to get loss for the epoch
@@ -450,20 +453,20 @@ def train(epoch):
 	#data
 	visualizeAsImages(dp0_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img0', n_sample = 18, nrow=5, normalize=False)
+		filename='e_'+str(epoch)+'_train_img0', n_sample = 18, nrow=5, normalize=False)
 	visualizeAsImages(dp9_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img9', n_sample = 18, nrow=5, normalize=False)
+		filename='e_'+str(epoch)+'_train_img9', n_sample = 18, nrow=5, normalize=False)
 	visualizeAsImages(dp1_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img1', n_sample = 18, nrow=5, normalize=False)
+		filename='e_'+str(epoch)+'_train_img1', n_sample = 18, nrow=5, normalize=False)
 
 	#reconstruction (dp0 only)
 	visualizeAsImages(recon_batch_dp0.data.clone(), 
 		opt.dirImageoutput,
-		filename='epoch_'+str(epoch)+'_recon0', n_sample = 18, nrow=5, normalize=False)
+		filename='e_'+str(epoch)+'_train_recon0', n_sample = 18, nrow=5, normalize=False)
 
-	print('Data and reconstructions saved.')
+	print('Train data and reconstruction saved.')
 
 
 	return recon_train_loss / (len(dataloader) * opt.batchSize), triplet_train_loss / (len(dataloader) * opt.batchSize)
@@ -475,9 +478,9 @@ def test(epoch):
 	recon_test_loss = 0
 	cosine_test_loss = 0
 	triplet_test_loss = 0
-	dataroot = random.sample(TestingData,1)[0]
+	dataroot = random.sample(Data,1)[0]
 
-	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
+	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontalTrainTestSplit(opt, root=dataroot, resize=64)
 	print('# size of the current (sub)dataset is %d' %len(dataset))
    # train_amount = train_amount + len(dataset)
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
@@ -499,6 +502,20 @@ def test(epoch):
 
 		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
 
+		# save test images
+
+		visualizeAsImages(dp0_img.data.clone(), 
+		opt.dirImageoutput, 
+		filename='e_'+str(epoch)+'_test_img0', n_sample = 18, nrow=5, normalize=False)
+
+		visualizeAsImages(dp9_img.data.clone(), 
+		opt.dirImageoutput, 
+		filename='e_'+str(epoch)+'_test_img9', n_sample = 18, nrow=5, normalize=False)
+
+		visualizeAsImages(dp1_img.data.clone(), 
+		opt.dirImageoutput, 
+		filename='e_'+str(epoch)+'_test_img1', n_sample = 18, nrow=5, normalize=False)
+
 		# test disentangling
 
 		z_per0_exp9 = torch.cat((z_per_dp0, z_exp_dp9), dim=1) # should be person 0 with expression 9
@@ -506,21 +523,23 @@ def test(epoch):
 
 		visualizeAsImages(recon_per0_exp9.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_per0_exp9', n_sample = 18, nrow=5, normalize=False)
+		filename='e_'+str(epoch)+'_test_per0_exp9', n_sample = 18, nrow=5, normalize=False)
 
 		z_per0_exp1 = torch.cat((z_per_dp0, z_exp_dp1), dim=1) # should look the same as dp0_img (exp1 and exp0 are the same)
 		recon_per0_exp1 = model.decode(z_per0_exp1)
 
 		visualizeAsImages(recon_per0_exp1.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_per0_exp1', n_sample = 18, nrow=5, normalize=False)
+		filename='e_'+str(epoch)+'_test_per0_exp1', n_sample = 18, nrow=5, normalize=False)
 
 		z_per1_exp9 = torch.cat((z_per_dp1, z_exp_dp9), dim=1) # should be unique
 		recon_per1_exp9 = model.decode(z_per1_exp9)
 
 		visualizeAsImages(recon_per1_exp9.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_per1_exp9', n_sample = 18, nrow=5, normalize=False)
+		filename='e_'+str(epoch)+'_test_per1_exp9', n_sample = 18, nrow=5, normalize=False)
+
+		print('Test images saved')
 
 
 		# calc reconstruction loss (dp0 only)
