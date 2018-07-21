@@ -143,8 +143,8 @@ Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_05_sel
 Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_06_select/')
 Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_07_select/')
 
+'''
 #session 02
-
 Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_01_select/')
 Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_02_select/')
 Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_03_select/')
@@ -152,8 +152,6 @@ Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_04_sel
 Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_05_select/')
 Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_06_select/')
 Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_07_select/')
-
-'''
 #session 03
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_01_select/')
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_02_select/')
