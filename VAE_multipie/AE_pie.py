@@ -154,36 +154,33 @@ def setAsDumbVariable(*args):
 	return barg   
 
 
-
 # Training data folder list
-TrainingData = []
+Data = []
 #session 01
 
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_01_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_02_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_03_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_04_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_05_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_06_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_07_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_01_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_02_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_03_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_04_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_05_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_06_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_07_select/')
 
-#session 02
 '''
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_01_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_02_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_03_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_04_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_05_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_06_select/')
-TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_07_select/')
-
+#session 02
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_01_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_02_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_03_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_04_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_05_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_06_select/')
+Data.append(opt.data_dir_prefix + 'real/multipie_select_batches/session02_07_select/')
 #session 03
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_01_select/')
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_02_select/')
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_03_select/')
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_04_select/')
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session03_05_select/')
-
 #session 04
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_01_select/')
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_02_select/')
@@ -192,11 +189,11 @@ TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session0
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_05_select/')
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_06_select/')
 TrainingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session04_07_select/')
-
 '''
-# Testing
-TestingData = []
-TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_select_test/')
+
+# Small Testing Set
+# TestingData = []
+# TestingData.append(opt.data_dir_prefix + 'real/multipie_select_batches/session01_select_test/')
 
 
 
@@ -282,6 +279,7 @@ class AE(nn.Module):
 		self.leakyrelu = nn.LeakyReLU(0.2)
 		self.relu = nn.ReLU()
 		self.hardtanh = nn.Hardtanh()
+		self.sigmoid = nn.Sigmoid()
 
 
 		########### my code below
@@ -317,7 +315,7 @@ class AE(nn.Module):
 		h5 = self.leakyrelu(self.bn5(self.e5(h4)))
 		h5 = h5.view(-1, 64*2*2)
 
-		return self.fc1(h5)
+		return self.sigmoid(self.fc1(h5))
 
 	def decode(self, z):
 		#print("decode")
@@ -362,9 +360,9 @@ def train(epoch):
 	print("train")
 	model.train()
 	recon_train_loss = 0
-	dataroot = random.sample(TrainingData,1)[0]
+	dataroot = random.sample(Data,1)[0]
 
-	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
+	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontalTrainTestSplit(opt, root=dataroot, resize=64)
 	print('# size of the current (sub)dataset is %d' %len(dataset))
  #   train_amount = train_amount + len(dataset)
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
@@ -388,24 +386,23 @@ def train(epoch):
 		#dp0
 		recon_batch_dp0, z_dp0 = model(dp0_img)
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
-		optimizer.zero_grad()
-		recon_loss.backward()
 		recon_train_loss += recon_loss.data[0].item()
-
 
 		#dp9
 		recon_batch_dp9, z_dp9 = model(dp9_img)
-		recon_loss = recon_loss_func(recon_batch_dp9, dp9_img)
-		optimizer.zero_grad()
-		recon_loss.backward()
+		recon_loss += recon_loss_func(recon_batch_dp9, dp9_img)
 		recon_train_loss += recon_loss.data[0].item()
 
 		#dp1
 		recon_batch_dp1, z_dp1 = model(dp1_img)
-		recon_loss = recon_loss_func(recon_batch_dp1, dp1_img)
+		recon_loss += recon_loss_func(recon_batch_dp1, dp1_img)
+		recon_train_loss += recon_loss.data[0].item()
+
+		#calc gradients for recon
+		model.zero_grad()
 		optimizer.zero_grad()
 		recon_loss.backward()
-		recon_train_loss += recon_loss.data[0].item()
+
 
 		#calc siamese loss
 
@@ -427,43 +424,43 @@ def train(epoch):
 			recon_loss.data[0].item() / len(dataloader)))
 
 	print('====> Epoch: {} Average recon loss: {:.4f}'.format(
-		  epoch, recon_train_loss / (len(dataloader) * opt.batchSize * 3)))
+		  epoch, recon_train_loss))
 
 	#data
 	visualizeAsImages(dp0_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img0', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_train_img0', n_sample = 25, nrow=5, normalize=False)
 	visualizeAsImages(dp9_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img9', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_train_img9', n_sample = 25, nrow=5, normalize=False)
 	visualizeAsImages(dp1_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img1', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_train_img1', n_sample = 25, nrow=5, normalize=False)
 
 	#reconstructions
 	visualizeAsImages(recon_batch_dp0.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon0', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_train_recon0', n_sample = 25, nrow=5, normalize=False)
 	visualizeAsImages(recon_batch_dp9.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon9', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_train_recon9', n_sample = 25, nrow=5, normalize=False)
 	visualizeAsImages(recon_batch_dp1.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon1', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'_train_recon1', n_sample = 25, nrow=5, normalize=False)
 
 
 	print('Data and reconstructions saved.')
 
-	return recon_train_loss / (len(dataloader) * opt.batchSize * 3)
+	return recon_train_loss
 
 def test(epoch):
 	print("test")
 	model.eval()
 	recon_test_loss = 0
 	#siamese_test_loss = 0
-	dataroot = random.sample(TestingData,1)[0]
+	dataroot = random.sample(Data,1)[0]
 
-	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontal(opt, root=dataroot, resize=64)
+	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontalTrainTestSplit(opt, root=dataroot, resize=64)
 	print('# size of the current (sub)dataset is %d' %len(dataset))
    # train_amount = train_amount + len(dataset)
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
@@ -487,7 +484,6 @@ def test(epoch):
 		recon_batch_dp0, z_dp0 = model(dp0_img)
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 		optimizer.zero_grad()
-		recon_loss.backward()
 		recon_test_loss += recon_loss.data[0].item()
 
 
@@ -495,14 +491,12 @@ def test(epoch):
 		recon_batch_dp9, z_dp9 = model(dp9_img)
 		recon_loss = recon_loss_func(recon_batch_dp9, dp9_img)
 		optimizer.zero_grad()
-		recon_loss.backward()
 		recon_test_loss += recon_loss.data[0].item()
 
 		#dp1
 		recon_batch_dp1, z_dp1 = model(dp1_img)
 		recon_loss = recon_loss_func(recon_batch_dp1, dp1_img)
 		optimizer.zero_grad()
-		recon_loss.backward()
 		recon_test_loss += recon_loss.data[0].item()
 
 		#calc siamese loss
@@ -517,31 +511,31 @@ def test(epoch):
 	#data
 	visualizeAsImages(dp0_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img0', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'test_img0', n_sample = 25, nrow=5, normalize=False)
 	visualizeAsImages(dp9_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img9', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'test_img9', n_sample = 25, nrow=5, normalize=False)
 	visualizeAsImages(dp1_img.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_img1', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'test_img1', n_sample = 25, nrow=5, normalize=False)
 
 	#reconstructions
 	visualizeAsImages(recon_batch_dp0.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon0', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'test_recon0', n_sample = 25, nrow=5, normalize=False)
 	visualizeAsImages(recon_batch_dp9.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon9', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'test_recon9', n_sample = 25, nrow=5, normalize=False)
 	visualizeAsImages(recon_batch_dp1.data.clone(), 
 		opt.dirImageoutput, 
-		filename='epoch_'+str(epoch)+'_recon1', n_sample = 25, nrow=5, normalize=False)
+		filename='epoch_'+str(epoch)+'test_recon1', n_sample = 25, nrow=5, normalize=False)
 
 
 
-	recon_test_loss /= (len(dataloader)*64)
+	recon_test_loss
 	#siamese_test_loss /= (len(dataloader)*64)
 	print('====> Test set recon loss: {:.4f}'.format(recon_test_loss))
-	return recon_test_loss / (len(dataloader) * opt.batchSize * 3)
+	return recon_test_loss
 
 
 def load_last_model():
@@ -576,13 +570,3 @@ if __name__ == '__main__':
 	# l = zip(it, it, it)
 	# # latent_space_transition(l)
 	# perform_latent_space_arithmatics(l)
-
-class waspSlicer(nn.Module):
-   def __init__(self, opt, ngpu=1, pstart = 0, pend=1):
-	   super(waspSlicer, self).__init__()
-	   self.ngpu = ngpu
-	   self.pstart = pstart
-	   self.pend = pend
-   def forward(self, input):
-	   output = input[:,self.pstart:self.pend].contiguous()
-	   return output
