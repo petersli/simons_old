@@ -362,16 +362,15 @@ def train(epoch):
 		#dp0
 		recon_batch_dp0, z_dp0 = model(dp0_img)
 		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
-		recon_train_loss += recon_loss.data[0].item()
 
 		#dp9
 		recon_batch_dp9, z_dp9 = model(dp9_img)
 		recon_loss += recon_loss_func(recon_batch_dp9, dp9_img)
-		recon_train_loss += recon_loss.data[0].item()
 
 		#dp1
 		recon_batch_dp1, z_dp1 = model(dp1_img)
 		recon_loss += recon_loss_func(recon_batch_dp1, dp1_img)
+		
 		recon_train_loss += recon_loss.data[0].item()
 
 		#calc gradients for recon
