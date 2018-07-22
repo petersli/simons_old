@@ -25,7 +25,7 @@ from torch.autograd import gradcheck
 from torch.autograd import Function
 import math
 # our data loader
-import MultipieLoader
+import MultipieLoader_no_ide
 import gc
 
 # parser = argparse.ArgumentParser(description='PyTorch VAE')
@@ -362,7 +362,7 @@ def train(epoch):
 	recon_train_loss = 0
 	dataroot = random.sample(Data,1)[0]
 
-	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontalTrainTestSplit(opt, root=dataroot, resize=64)
+	dataset = MultipieLoader_no_ide.FareMultipieExpressionTripletsFrontalTrainTestSplit(opt, root=dataroot, resize=64)
 	print('# size of the current (sub)dataset is %d' %len(dataset))
  #   train_amount = train_amount + len(dataset)
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
@@ -460,7 +460,7 @@ def test(epoch):
 	#siamese_test_loss = 0
 	dataroot = random.sample(Data,1)[0]
 
-	dataset = MultipieLoader.FareMultipieExpressionTripletsFrontalTrainTestSplit(opt, root=dataroot, resize=64)
+	dataset = MultipieLoader_no_ide.FareMultipieExpressionTripletsFrontalTrainTestSplit(opt, root=dataroot, resize=64)
 	print('# size of the current (sub)dataset is %d' %len(dataset))
    # train_amount = train_amount + len(dataset)
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
