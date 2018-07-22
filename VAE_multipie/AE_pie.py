@@ -28,30 +28,6 @@ import math
 import MultipieLoader_no_ide
 import gc
 
-# parser = argparse.ArgumentParser(description='PyTorch VAE')
-# parser.add_argument('--batch-size', type=int, default=64, metavar='N',
-#					 help='input batch size for training (default: 64)')
-# parser.add_argument('--epochs', type=int, default=20, metavar='N',
-#					 help='number of epochs to train (default: 20)')
-# parser.add_argument('--no-cuda', action='store_true', default=False,
-#					 help='enables CUDA training')
-# parser.add_argument('--seed', type=int, default=1, metavar='S',
-#					 help='random seed (default: 1)')
-# parser.add_argument('--log-interval', type=int, default=1, metavar='N',
-#					 help='how many batches to wait before logging training status')
-# args = parser.parse_args()
-# # args = parser.parse_args(args=[])  --for ipynb
-# args.cuda = not args.no_cuda and torch.cuda.is_available()
-
-
-
-# torch.manual_seed(args.seed)
-# if args.cuda:
-#	 torch.cuda.manual_seed(args.seed)
-
-# kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=8)
 parser.add_argument('--batchSize', type=int, default=100, help='input batch size')
@@ -69,7 +45,7 @@ parser.add_argument('--dirCheckpoints', default='.', help='folder to model check
 parser.add_argument('--dirImageoutput', default='.', help='folder to output images')
 parser.add_argument('--dirTestingoutput', default='.', help='folder to testing results/images')
 parser.add_argument('--manualSeed', type=int, help='manual seed')
-parser.add_argument('--epoch_iter', type=int,default=40, help='number of epochs on entire dataset')
+parser.add_argument('--epoch_iter', type=int,default=1000, help='number of epochs on entire dataset')
 parser.add_argument('--location', type = int, default=0, help ='where is the code running')
 parser.add_argument('-f',type=str,default= '', help='dummy input required for jupyter notebook')
 opt = parser.parse_args()
