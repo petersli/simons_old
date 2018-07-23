@@ -548,7 +548,7 @@ def test(epoch):
 		z_dp1, z_per_dp1, z_exp_dp1 = model.get_latent_vectors(dp1_img)
 
 		optimizer.zero_grad()
-		disengtangle.zero_grad()
+		disentangle.zero_grad()
 
 		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
 
