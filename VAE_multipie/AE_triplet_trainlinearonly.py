@@ -289,9 +289,9 @@ class AE(nn.Module):
 		recon_x = self.decode(z)
 		return recon_x, z, z_per, z_exp
 
-class Disentangle(nn.Module):
+class Disentangler(nn.Module):
 	def __init__(self, latent_variable_size):
-		super(Disentangle, self).__init__()
+		super(Disentangler, self).__init__()
 		self.latent_variable_size = latent_variable_size
 
 		self.Linear1 = nn.Linear(latent_variable_size, latent_variable_size / 2)
@@ -309,7 +309,7 @@ class Disentangle(nn.Module):
 		return z_concat, z_per, z_exp
 
 
-disentangle = Disentangle(latent_variable_size=128)
+disentangle = Disentangler(latent_variable_size=128)
 model = AE(latent_variable_size=128)
 model.load_state_dict(torch.load('Epoch_814.pth')) # pretrained encoder and decoder
 
@@ -440,6 +440,9 @@ def train(epoch):
 		expression_train_loss += expression_loss[0].item()
 
 		# calc gradients for all losses except swap
+
+		optmiizer.zero_grad()
+		disentangle.zero_grad()
 
 		losses = L1_loss + sim_loss + triplet_loss + expression_loss
 		losses.backward(retain_graph=True)
