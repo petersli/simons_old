@@ -631,7 +631,7 @@ def start_training():
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
 		triplet_loss = train(epoch)
 		torch.save(model.state_dict(),
-		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_cosine_{:.4f}.pth'.format(epoch, triplet_loss))
+		 opt.dirCheckpoints + '/Epoch_{}_Triplet_{:.4f}.pth'.format(epoch, triplet_loss))
 		if epoch % 10 == 0 or epoch == 1:
 			test(epoch)
 
