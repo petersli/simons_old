@@ -441,7 +441,7 @@ def train(epoch):
 
 		# calc gradients for all losses except swap
 
-		optmiizer.zero_grad()
+		optimizer.zero_grad()
 		disentangle.zero_grad()
 
 		losses = L1_loss + sim_loss + triplet_loss + expression_loss
