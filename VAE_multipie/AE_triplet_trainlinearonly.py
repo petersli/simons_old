@@ -313,7 +313,8 @@ model = AE(latent_variable_size=128)
 model.load_state_dict(torch.load('Epoch_814.pth')) # pretrained encoder and decoder
 
 if opt.cuda:
-	 model.cuda()
+	disentangle.cuda()
+	model.cuda()
 
 def recon_loss_func(recon_x, x):
 	recon_func = nn.MSELoss()
