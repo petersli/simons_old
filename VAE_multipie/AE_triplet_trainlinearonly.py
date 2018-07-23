@@ -356,7 +356,7 @@ dis_loss = 0
 def train(epoch):
 	print("train")
 	model.eval()
-	disengtangle.train()
+	disentangle.train()
 	recon_train_loss = 0
 	cosine_train_loss = 0
 	triplet_train_loss = 0
@@ -482,10 +482,9 @@ def train(epoch):
 		
 
 		optimizer.step()
-		print('Train Epoch: {} [{}/{} ({:.0f}%)] Recon: {:.6f} Cosine: {:.6f} Triplet: {:.6f} Swap: {:.6f}'.format(
+		print('Train Epoch: {} [{}/{} ({:.0f}%)] Cosine: {:.6f} Triplet: {:.6f} Swap: {:.6f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
-			100. * batch_idx / len(dataloader),
-			recon_loss.data[0].item(), sim_loss.data[0].item(), triplet_loss.data[0].item(), swap_loss.data[0].item()))
+			100. * batch_idx / len(dataloader), sim_loss.data[0].item(), triplet_loss.data[0].item(), swap_loss.data[0].item()))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
 	lossfile.write('Epoch:{} Recon:{:.6f} Swap:{:.6f} ExpLoss:{:.6f}\n'.format(epoch, recon_train_loss, 
@@ -519,7 +518,7 @@ def train(epoch):
 	print('Train data and reconstruction saved.')
 
 
-	return recon_train_loss / (len(dataloader) * opt.batchSize), triplet_train_loss / (len(dataloader) * opt.batchSize)
+	return triplet_train_loss / (len(dataloader) * opt.batchSize)
 
 
 def test(epoch):
@@ -632,7 +631,7 @@ def start_training():
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
 		recon_loss, triplet_loss = train(epoch)
 		torch.save(model.state_dict(),
-		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_cosine_{:.4f}.pth'.format(epoch, recon_loss, triplet_loss))
+		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_cosine_{:.4f}.pth'.format(epoch, triplet_loss))
 		if epoch % 10 == 0 or epoch == 1:
 			test(epoch)
 
