@@ -280,11 +280,11 @@ class AE(nn.Module):
 
 	def get_latent_vectors(self, x):
 		z = self.encode(x) # whole latent vector
-		z, z_per, z_exp = disentangle.forward(z)
+		z, z_per, z_exp = disentangle(z)
 		return z, z_per, z_exp
 
 	def forward(self, x):
-		z, z_per, z_exp = get_latent_vectors(x)
+		z, z_per, z_exp = self.get_latent_vectors(x)
 		recon_x = self.decode(z)
 		return recon_x, z, z_per, z_exp
 
