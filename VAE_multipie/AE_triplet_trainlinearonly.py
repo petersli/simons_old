@@ -493,7 +493,7 @@ def train(epoch):
 		triplet_train_loss))
 
 
-	print('====> Epoch: {} Average recon loss: {:.6f} Average cosine loss: {:.6f} Average triplet: {:.6f} Average swap: {:.6f}'.format(
+	print('====> Epoch: {} Average cosine loss: {:.6f} Average triplet: {:.6f} Average swap: {:.6f}'.format(
 		  epoch, recon_train_loss, cosine_train_loss, 
 		  triplet_train_loss, swap_train_loss))
 			#divide by (batch_size * num_batches) to get average loss for the epoch
@@ -629,7 +629,7 @@ def start_training():
 
 
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
-		recon_loss, triplet_loss = train(epoch)
+		triplet_loss = train(epoch)
 		torch.save(model.state_dict(),
 		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_cosine_{:.4f}.pth'.format(epoch, triplet_loss))
 		if epoch % 10 == 0 or epoch == 1:
