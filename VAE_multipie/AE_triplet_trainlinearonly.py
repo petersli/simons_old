@@ -524,7 +524,7 @@ def train(epoch):
 def test(epoch):
 	print("test")
 	model.eval()
-	disengtangle.eval()
+	disentangle.eval()
 	recon_test_loss = 0
 	cosine_test_loss = 0
 	triplet_test_loss = 0
