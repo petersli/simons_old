@@ -278,14 +278,13 @@ class AE(nn.Module):
 
 		return self.hardtanh(self.d6(self.pd5(self.up5(h5))))
 
-	# def get_latent_vectors(self, x):
-	# 	z = self.encode(x) # whole latent vector
-	# 	z_per = z[:,0:80].contiguous() # part of z repesenenting identity of the person
-	# 	z_exp = z[:,80:128].contiguous()  # part of z representing the expression
-	# 	return z, z_per, z_exp
+	def get_latent_vectors(self, x):
+		z = self.encode(x) # whole latent vector
+		z, z_per, z_exp = disentangle.forward(z)
+		return z, z_per, z_exp
 
 	def forward(self, x):
-		z, z_per, z_exp = disentangle(x)
+		z, z_per, z_exp = get_latent_vectors(x)
 		recon_x = self.decode(z)
 		return recon_x, z, z_per, z_exp
 
