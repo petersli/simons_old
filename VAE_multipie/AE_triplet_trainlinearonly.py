@@ -388,15 +388,15 @@ def train(epoch):
 
 		recon_batch_dp0, z_dp0, z_per_dp0, z_exp_dp0 = model(dp0_img)
 
-		# calc reconstruction loss (dp0 only) --commented out for this file b/c encoder and decoder are pretrained
+		# calc reconstruction loss (dp0 only)
 
-		# recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
+		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 
-		# optimizer.zero_grad()
-		# disentangle.zero_grad()
+		optimizer.zero_grad()
+		disentangle.zero_grad()
 
-		# recon_loss.backward(retain_graph=True)
-		# recon_train_loss += recon_loss.data[0].item()
+		recon_loss.backward(retain_graph=True)
+		recon_train_loss += recon_loss.data[0].item()
 
 		# calc cosine similarity loss
 
@@ -447,44 +447,10 @@ def train(epoch):
 		losses = L1_loss + sim_loss + triplet_loss + expression_loss
 		losses.backward(retain_graph=True)
 
-
-		# calc swapping loss
-
-		z_per0_exp9 = torch.cat((z_per_dp0, z_exp_dp9), dim=1) # should be equal to img9 (per0 and per9 are the same)
-		recon_per0_exp9 = model.decode(z_per0_exp9)
-
-		z_per0_exp1 = torch.cat((z_per_dp0, z_exp_dp1), dim=1) # should be equal to img0 (exp1 and exp0 are the same)
-		recon_per0_exp1 = model.decode(z_per0_exp1)
-
-		z_per9_exp0 = torch.cat((z_per_dp9, z_exp_dp0), dim=1) # should be equal to img0
-		recon_per9_exp0 = model.decode(z_per9_exp0)
-
-		z_per1_exp0 = torch.cat((z_per_dp1, z_exp_dp0), dim=1) # should be equal to img1
-		recon_per1_exp0 = model.decode(z_per1_exp0)
-
-
-		swap_loss1 = recon_loss_func(recon_per0_exp9, dp9_img)
-		swap_loss1.backward(retain_graph=True)
-
-		swap_loss2 = recon_loss_func(recon_per0_exp1, dp0_img)
-		swap_loss2.backward(retain_graph=True)
-
-		swap_loss3 = recon_loss_func(recon_per9_exp0, dp0_img)
-		swap_loss3.backward(retain_graph=True)
-
-		swap_loss4 = recon_loss_func(recon_per1_exp0, dp1_img)
-		swap_loss4.backward()
-
-		swap_loss = swap_loss1 + swap_loss2 + swap_loss3 + swap_loss4
-
-		swap_train_loss += swap_loss.data[0].item()
-
-		
-
 		optimizer.step()
-		print('Train Epoch: {} [{}/{} ({:.0f}%)] Cosine: {:.6f} Triplet: {:.6f} Swap: {:.6f}'.format(
+		print('Train Epoch: {} [{}/{} ({:.0f}%)] Recon: {:.6f} Cosine: {:.6f} Triplet: {:.6f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
-			100. * batch_idx / len(dataloader), sim_loss.data[0].item(), triplet_loss.data[0].item(), swap_loss.data[0].item()))
+			100. * batch_idx / len(dataloader),recon_loss.data[0].item(), sim_loss.data[0].item(), triplet_loss.data[0].item()))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
 	lossfile.write('Epoch:{} Recon:{:.6f} Swap:{:.6f} ExpLoss:{:.6f}\n'.format(epoch, recon_train_loss, 
@@ -493,9 +459,9 @@ def train(epoch):
 		triplet_train_loss))
 
 
-	print('====> Epoch: {} Average cosine loss: {:.6f} Average triplet: {:.6f} Average swap: {:.6f}'.format(
+	print('====> Epoch: {} Average recon loss: {:.6f} Average cosine: {:.6f} Average triplet: {:.6f}'.format(
 		  epoch, recon_train_loss, cosine_train_loss, 
-		  triplet_train_loss, swap_train_loss))
+		  triplet_train_loss))
 			#divide by (batch_size * num_batches) to get average loss for the epoch
 
 
