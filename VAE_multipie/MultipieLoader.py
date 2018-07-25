@@ -17,7 +17,7 @@ NUMPY_EXTENSIONS = ['.npy', '.NPY']
 
 PNG_EXTENSIONS = ['.png', '.PNG']
 
-dict = np.load('dict.npy').item()
+cropdict_pie = np.load('cropdict_pie.npy').item()
 
 
 def duplicates(lst, item, match = True):
@@ -164,7 +164,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath0[-20:-4])
                 key = (ids, ide)
        
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img0 = img0.crop(coords) #crop
 
                 if resize:
@@ -177,7 +177,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath9[-20:-4])
                 key = (ids, ide)                
          
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img9 = img9.crop(coords) #crop
 
                 if resize:
@@ -191,7 +191,7 @@ class FareMultipieExpressionTripletsFrontal(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath1[-20:-4])
                 key = (ids, ide)
              
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img1 = img1.crop(coords) #crop
 
                 if resize:
@@ -327,7 +327,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath0[-20:-4])
                 key = (ids, '01')
        
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img0 = img0.crop(coords) #crop
 
                 if resize:
@@ -340,7 +340,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath9[-20:-4])
                 key = (ids, '01')                
          
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img9 = img9.crop(coords) #crop
 
                 if resize:
@@ -354,7 +354,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath1[-20:-4])
                 key = (ids, '01')
              
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img1 = img1.crop(coords) #crop
 
                 if resize:
