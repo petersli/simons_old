@@ -88,7 +88,7 @@ def parse_imgfilename_fare_multipie(fn):
 
 class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
     # a full fare dataset object
-    def __init__(self, opt, root, 
+    def __init__(self, opt, root,
         doTesting = False,
         resize = 64,
         transform=None, return_paths=False):
@@ -171,7 +171,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
 
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath0[-20:-4])
                 key = (ids, '01')
-       
+
                 coords = dict[key]
                 img0 = img0.crop(coords) #crop
 
@@ -183,8 +183,8 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
             with Image.open(f9) as img9:
                 img9 = img9.convert('RGB')
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath9[-20:-4])
-                key = (ids, '01')                
-         
+                key = (ids, '01')
+
                 coords = dict[key]
                 img9 = img9.crop(coords) #crop
 
@@ -198,7 +198,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
 
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath1[-20:-4])
                 key = (ids, '01')
-             
+
                 coords = dict[key]
                 img1 = img1.crop(coords) #crop
 
@@ -206,7 +206,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
                     img1 = img1.resize((resize, resize),Image.ANTIALIAS)
                 img1 = np.array(img1)
                 ide0 = ide
-        return img0, img9, img1, ide0, ide9, ide1  
+        return img0, img9, img1, ide0, ide9, ide1
         # I'm returning the ide's to use them for training with expression labeling; remove if not needed
 
 
@@ -220,7 +220,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
         if len(ava)>0:
             return random.sample(ava, 1)[0]
         else:
-            return index    
+            return index
 
     def getCoindex1(self, index):
         # different ids, same ide, same idl, same idt, same idp
@@ -232,7 +232,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
         if len(ava)>0:
             return random.sample(ava, 1)[0]
         else:
-            return index  
+            return index
 
     def inClique(self, a, b):
         c1 = ['041','050', '051']
@@ -255,48 +255,81 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
         index = np.random.randint(len(self.imgs), size=1)[0]
         return index
 
-class MUGTripletsFrontalTrainTestSplit(data.Dataset):
-    def __init__(self, opt, root, 
+class TrainTestSplit(data.Dataset):
+    def __init__(self, opt, pieroot, mugroot
         doTesting = False,
         resize = 64,
         transform=None, return_paths=False):
         self.opt = opt
-        persondir_list = self.make_dataset_mug(root)
+        persondir_list = self.make_dataset_mug(mugroot)
+        imgs, ids, ide, idp, idl = self.make_dataset_fare_multipie(pieroot)
+
 
         if len(imgs) == 0:
             raise(RuntimeError("Found 0 images in: " + root + "\n"
                                "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
-        self.root = root
+        self.pieroot = pieroot
+        self.mugroot = mugroot
         self.doTesting = doTesting
         self.resize = resize
         self.persondir_list = persondir_list
         self.transform = transform
         self.return_paths = return_paths
-        self.loader = self.mugloader_expression_triplet
-        self.TestList = ['084','083', '082','079','078','077']
+        self.mugloader = self.mugloader_expression_triplet
+        self.pieloader = self.fareloader_expression_triplet
 
-    def __getitem__(self, index):
+        self.imgs = imgs
+        self.ids = ids
+        self.ide = ide
+        self.idp = idp
+        self.idl = idl
+
+        self.MugTestList = ['084','083', '082','079','078','077']
+        self.PieTestList = ['180','181', '182','183','184','220','221','222','223','224']
+
+    def __getitem__(self, pieindex, mugindex):
 
         if self.doTesting:
-            while (not self.isTestingID(persondir_list[index])):
-                index = self.resample()
+            while (not self.isTestingID(persondir_list[mugindex])):
+                mugindex = self.resample()
         else:
-            while self.isTestingID(persondir_list[index]):
-                index = self.resample()
+            while self.isTestingID(persondir_list[mugindex]):
+                mugindex = self.resample()
 
+        if self.doTesting:
+            while (not self.isTestingID(self.ids[pieindex])) or (not (self.idp[pieindex] == '051')):
+                pieindex = self.resample()
+        else:
+            while self.isTestingID(self.ids[pieindex]) or (not (self.idp[pieindex] == '051')):
+                pieindex = self.resample()
+
+        ##### PIE #####
+        imgPath0 = self.imgs[index]
+        # different lighting
+        coindex9 = self.getCoindex9(index)
+        # different person
+        coindex1 = self.getCoindex1(index)
+        imgPath9 = self.imgs[coindex9]
+        imgPath1 = self.imgs[coindex1]
+
+        img0, img9, img1, ide0, ide9, ide1 = self.pieloader(imgPath0, imgPath9, imgPath1)
+
+        ##### MUG #####
         intensities = range(11)
-        inten0 = random.sample(intensities, 1)
-        inten9 = random.sample(intensities, 1)
-        inten1 = random.sample(intensities, 1)
+        inten2 = random.sample(intensities, 1)
+        inten3 = random.sample(intensities, 1)
+        inten4 = random.sample(intensities, 1)
 
+        imgPath2 = dict_mug[persondir_list[index], inten0]
+        imgPath3 = dict_mug[persondir_list[index], inten9]
+        imgPath4 = dict_mug[persondir_list[index], inten1]
 
-        imgPath0 = dict_mug[persondir_list[index], inten0]
-        imgPath9 = dict_mug[persondir_list[index], inten9]
-        imgPath1 = dict_mug[persondir_list[index], inten1]
+        img2, img3, img4 = self.mugloader(imgPath2, imgPath3, imgPath4, person=persondir_list[index])
 
-        img0, img9, img1 = self.loader(imgPath0, imgPath9, imgPath1, person=persondir_list[index])
+        return img0, img9, img1, ide0, ide9, ide1, img2, img3, img4, inten2, inten3, inten4
 
-        return img0, img9, img1, inten0, inten9, inten1
+        # 0, 9, 1 multipie
+        # 2, 3, 4 mug
 
     def __len__(self):
         return len(self.imgs)
@@ -307,6 +340,26 @@ class MUGTripletsFrontalTrainTestSplit(data.Dataset):
             for persondir in dirlist:
                 persondir_list.append(persondir)
         return persondir_list
+
+    def make_dataset_fare_multipie(self, dirpath_root):
+        img_list = [] # list of path to images
+        ids_list = [] # list of ids of the images
+        ide_list = [] # list of expression of the images
+        idp_list = [] # list of pose/camera of the images
+        idl_list = [] # list of lighting of the images
+        print(dirpath_root)
+        assert os.path.isdir(dirpath_root)
+        for root, _, fnames in sorted(os.walk(dirpath_root)):
+            for fname in fnames:
+                if is_image_file(fname):
+                    ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(fname)
+                    ids_list.append(ids)
+                    ide_list.append(ide)
+                    idp_list.append(idp)
+                    idl_list.append(idl)
+                    path_img = os.path.join(root, fname)
+                    img_list.append(path_img)
+        return img_list, ids_list, ide_list, idp_list, idl_list
 
     def mugloader_expression_triplet(self, imgPath0, imgPath9, imgPath1, person):
         resize=self.resize
@@ -324,7 +377,7 @@ class MUGTripletsFrontalTrainTestSplit(data.Dataset):
         with open(imgPath9, 'rb') as f9:
             with Image.open(f9) as img9:
                 img9 = img9.convert('RGB')
-                
+
                 coords = cropdict_mug[person]
                 img9 = img9.crop(coords) #crop
 
@@ -335,7 +388,7 @@ class MUGTripletsFrontalTrainTestSplit(data.Dataset):
         with open(imgPath1, 'rb') as f1:
             with Image.open(f1) as img1:
                 img1 = img1.convert('RGB')
-             
+
                 coords = cropdict_mug[person]
                 img1 = img1.crop(coords) #crop
 
@@ -365,9 +418,3 @@ class MUGTripletsFrontalTrainTestSplit(data.Dataset):
     def resample(self):
         index = np.random.randint(len(self.persondir_list), size=1)[0]
         return index
-
-
-
-
-
-
