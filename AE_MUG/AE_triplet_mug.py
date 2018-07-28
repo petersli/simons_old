@@ -345,7 +345,8 @@ dis_loss = 0
 def train(epoch):
 	print("train")
 	model.train()
-	recon_train_loss = 0
+	recon_pie_train_loss = 0
+	recon_mug_train_loss = 0
 	cosine_train_loss = 0
 	triplet_train_loss = 0
 	swap_train_loss = 0
@@ -385,13 +386,13 @@ def train(epoch):
 
 		# calc reconstruction loss (dp0 only)
 
-		recon_loss = recon_loss_func(recon_batch_dp0, dp0_img)
+		recon_pie_loss = recon_loss_func(recon_batch_dp0, dp0_img)
 
 		optimizer.zero_grad()
 		model.zero_grad()
 
-		recon_loss.backward(retain_graph=True)
-		recon_train_loss += recon_loss.data[0].item()
+		recon_pie_loss.backward(retain_graph=True)
+		recon_pie_train_loss += recon_pie_loss.data[0].item()
 
 		# calc cosine similarity loss
 
@@ -471,24 +472,45 @@ def train(epoch):
 
 		swap_train_loss += swap_loss.data[0].item()
 
+		optimizer.step()
+
+		optimizer.zero_grad()
+		model.zero_grad()
+
 		##### MUG #####
 
-		##recon
+		## recon ##
 
-		##do the for loop thing
+		z_dp3, z_per_dp3, z_exp_dp3 = model.get_latent_vectors(dp3_img)
+		z_dp4, z_per_dp4, z_exp_dp4 = model.get_latent_vectors(dp4_img)
 
-		
+		recon_batch_dp2, z_dp2, z_per_dp2, z_exp_dp2 = model(dp2_img)
 
-		optimizer.step()
+
+		recon_mug_loss = recon_loss_func(recon_batch_dp2, dp2_img)
+
+		recon_mug_loss.backward(retain_graph=True)
+		recon_mug_train_loss += recon_mug_loss.data[0].item()
+
+
+		### intensity ###
+
+		target = torch.full(z_exp_dp2.size(), inten2)
+		inten_loss = L1(z_exp_dp2, target)
+		inten_loss.backward()
+		inten_train_loss += inten_loss.data[0].item()
+
 		print('Train Epoch: {} [{}/{} ({:.0f}%)] Recon: {:.6f} Cosine: {:.6f} Triplet: {:.6f} Swap: {:.6f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
 			100. * batch_idx / len(dataloader),
 			recon_loss.data[0].item(), sim_loss.data[0].item(), triplet_loss.data[0].item(), swap_loss.data[0].item()))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
-	lossfile.write('Epoch:{} Recon:{:.6f} Swap:{:.6f} ExpLoss:{:.6f}\n'.format(epoch, recon_train_loss,
+	lossfile.write('PIE Epoch:{} Recon:{:.6f} Swap:{:.6f} ExpLoss:{:.6f}\n'.format(epoch, recon_pie_train_loss,
 		swap_train_loss, expression_train_loss))
-	lossfile.write('Epoch:{} cosineSim:{:.6f} triplet:{:.6f}\n'.format(epoch, cosine_train_loss,
+	lossfile.write('PIE Epoch:{} cosineSim:{:.6f} triplet:{:.6f}\n'.format(epoch, cosine_train_loss,
+		triplet_train_loss))
+	lossfile.write('MUG Epoch:{} Recon:{:.6f} triplet:{:.6f}\n'.format(epoch, recon_mug_train_loss,
 		triplet_train_loss))
 
 	print('====> Epoch: {} Average recon loss: {:.6f} Average cosine loss: {:.6f} Average triplet: {:.6f} Average swap: {:.6f}'.format(
@@ -601,6 +623,11 @@ def test(epoch):
 		triplet_loss = triplet_loss_func(z_per_dp0, z_per_dp9, z_per_dp1) + triplet_loss_func(z_exp_dp0, z_exp_dp1, z_exp_dp9)
 			# triplet(anchor, positive, negative)
 		triplet_test_loss = triplet_loss.data[0].item()
+
+		##### MUG #####
+		## do the for loop thing
+
+		img_list = []
 
 	print('Test images saved')
 	print('====> Test set recon loss: {:.4f}\ttriplet loss:  {:.4f}'.format(recon_test_loss, triplet_test_loss))
