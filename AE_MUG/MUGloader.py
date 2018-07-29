@@ -19,7 +19,7 @@ PNG_EXTENSIONS = ['.png', '.PNG']
 
 cropdict_pie = np.load('cropdict_pie.npy').item()
 cropdict_mug = np.load('cropdict_mug.npy').item()
-dict_mug = np.load('dict_mug.py').item()
+dict_mug = np.load('dict_mug.npy').item()
 
 def duplicates(lst, item, match = True):
     if match:
@@ -256,12 +256,12 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
         return index
 
 class TrainTestSplit(data.Dataset):
-    def __init__(self, opt, pieroot, mugroot
+    def __init__(self, opt, pieroot, mugroot,
         doTesting = False,
         resize = 64,
         transform=None, return_paths=False):
         self.opt = opt
-        persondir_list = self.make_dataset_mug(mugroot)
+        self.persondir_list = self.make_persondir_list(mugroot)
         imgs, ids, ide, idp, idl = self.make_dataset_fare_multipie(pieroot)
 
 
@@ -272,7 +272,7 @@ class TrainTestSplit(data.Dataset):
         self.mugroot = mugroot
         self.doTesting = doTesting
         self.resize = resize
-        self.persondir_list = persondir_list
+        ## self.persondir_list = self.persondir_list
         self.transform = transform
         self.return_paths = return_paths
         self.mugloader = self.mugloader_expression_triplet
@@ -287,20 +287,23 @@ class TrainTestSplit(data.Dataset):
         self.MugTestList = ['084','083', '082','079','078','077']
         self.PieTestList = ['180','181', '182','183','184','220','221','222','223','224']
 
-    def __getitem__(self, pieindex, mugindex):
+    def __getitem__(self, index):
+
+    	pieindex = index
+    	mugindex = index
 
         if self.doTesting:
-            while (not self.isTestingID(persondir_list[mugindex])):
+            while (not self.persondir_list[mugindex] in self.MugTestList):
                 mugindex = self.resample()
         else:
-            while self.isTestingID(persondir_list[mugindex]):
+            while (self.persondir_list[mugindex] in self.MugTestList):
                 mugindex = self.resample()
 
         if self.doTesting:
-            while (not self.isTestingID(self.ids[pieindex])) or (not (self.idp[pieindex] == '051')):
+            while (not self.ids[pieindex] in self.PieTestList) or (not (self.idp[pieindex] == '051')):
                 pieindex = self.resample()
         else:
-            while self.isTestingID(self.ids[pieindex]) or (not (self.idp[pieindex] == '051')):
+            while (self.ids[pieindex] in self.PieTestList) or (not (self.idp[pieindex] == '051')):
                 pieindex = self.resample()
 
         ##### PIE #####
@@ -320,11 +323,11 @@ class TrainTestSplit(data.Dataset):
         inten3 = random.sample(intensities, 1)
         inten4 = random.sample(intensities, 1)
 
-        imgPath2 = dict_mug[persondir_list[index], inten0]
-        imgPath3 = dict_mug[persondir_list[index], inten9]
-        imgPath4 = dict_mug[persondir_list[index], inten1]
+        imgPath2 = dict_mug[self.persondir_list[index], inten0]
+        imgPath3 = dict_mug[self.persondir_list[index], inten9]
+        imgPath4 = dict_mug[self.persondir_list[index], inten1]
 
-        img2, img3, img4 = self.mugloader(imgPath2, imgPath3, imgPath4, person=persondir_list[index])
+        img2, img3, img4 = self.mugloader(imgPath2, imgPath3, imgPath4, person=self.persondir_list[index])
 
         return img0, img9, img1, ide0, ide9, ide1, img2, img3, img4, inten2, inten3, inten4
 
@@ -335,11 +338,11 @@ class TrainTestSplit(data.Dataset):
         return len(self.imgs)
 
     def make_persondir_list(self, dirpath_root):
-        persondir_list = [] # list of path to images
+        self.persondir_list = [] # list of path to images
         for root, dirlist, filelist in sorted(os.walk(dirpath_root)):
             for persondir in dirlist:
-                persondir_list.append(persondir)
-        return persondir_list
+                self.persondir_list.append(persondir)
+        return self.persondir_list
 
     def make_dataset_fare_multipie(self, dirpath_root):
         img_list = [] # list of path to images
@@ -360,6 +363,13 @@ class TrainTestSplit(data.Dataset):
                     path_img = os.path.join(root, fname)
                     img_list.append(path_img)
         return img_list, ids_list, ide_list, idp_list, idl_list
+
+    def parse_imgfilename_fare_multipie(self, fn):
+        ids = fn[0:3]
+        ide = fn[7:9]
+        idp = fn[10:13]
+        idl = fn[14:16]
+        return ids, ide, idp, idl
 
     def mugloader_expression_triplet(self, imgPath0, imgPath9, imgPath1, person):
         resize=self.resize
@@ -398,6 +408,54 @@ class TrainTestSplit(data.Dataset):
 
         return img0, img9, img1
 
+    def fareloader_expression_triplet(self, imgPath0, imgPath9, imgPath1):
+        resize=self.resize
+        ide0 = 0
+        ide9 = 0
+        ide1 = 0
+        with open(imgPath0, 'rb') as f0:
+            with Image.open(f0) as img0:
+                img0 = img0.convert('RGB')
+
+                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath0[-20:-4])
+                key = (ids, '01')
+
+                coords = dict[key]
+                img0 = img0.crop(coords) #crop
+
+                if resize:
+                    img0 = img0.resize((resize, resize),Image.ANTIALIAS)
+                img0 = np.array(img0)
+                ide1 = ide
+        with open(imgPath9, 'rb') as f9:
+            with Image.open(f9) as img9:
+                img9 = img9.convert('RGB')
+                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath9[-20:-4])
+                key = (ids, '01')
+
+                coords = dict[key]
+                img9 = img9.crop(coords) #crop
+
+                if resize:
+                    img9 = img9.resize((resize, resize),Image.ANTIALIAS)
+                img9 = np.array(img9)
+                ide9 = ide
+        with open(imgPath1, 'rb') as f1:
+            with Image.open(f1) as img1:
+                img1 = img1.convert('RGB')
+
+                ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath1[-20:-4])
+                key = (ids, '01')
+
+                coords = dict[key]
+                img1 = img1.crop(coords) #crop
+
+                if resize:
+                    img1 = img1.resize((resize, resize),Image.ANTIALIAS)
+                img1 = np.array(img1)
+                ide0 = ide
+        return img0, img9, img1, ide0, ide9, ide1
+
     def inClique(self, a, b):
         c1 = ['041','050', '051']
         c2 = ['080', '090', '120']
@@ -408,11 +466,11 @@ class TrainTestSplit(data.Dataset):
         else:
             return False
 
-    def isTestingID(self, a):
-        if a in self.TestList:
-            return True
-        else:
-            return False
+    # def isTestingID(self, a):
+    #     if a in self.TestList:
+    #         return True
+    #     else:
+    #         return False
 
 
     def resample(self):
