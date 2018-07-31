@@ -293,7 +293,7 @@ class TrainTestSplit(data.Dataset):
     	mugindex = index
 
         if mugindex in range(len(self.persondir_list)):
-            print (mugindex)
+            #print (mugindex)
             if self.doTesting:
                 while ((not self.persondir_list[mugindex] in self.MugTestList) or (not mugindex in range(len(self.persondir_list)))):
                     mugindex = self.mugresample()
@@ -352,7 +352,7 @@ class TrainTestSplit(data.Dataset):
         persondir_list = [] # list of path to images
         for root, dirlist, filelist in sorted(os.walk(dirpath_root)):
             for persondir in dirlist:
-                print(persondir)
+                #print(persondir)
                 persondir_list.append(persondir)
         return persondir_list
 
