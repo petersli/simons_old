@@ -693,7 +693,7 @@ def test(epoch):
 		img_list = []
         for i in range(11):
             z_exp_test = torch.full(z_exp_dp2.size(), i / 10)
-            z_test = torch.cat((z_per_dp2.cuda(), z_exp_test.cuda()))
+            z_test = torch.cat((z_per_dp2.cuda(), z_exp_test.cuda()), dim=1)
             recon_test = model.decode(z_test)
             img_list[i] = recon_test
 
