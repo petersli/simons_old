@@ -574,7 +574,7 @@ def test(epoch):
 			z_test = torch.cat((z_per_dp0.cuda(), z_exp_test.cuda()), dim=1)
 			recon_test = model.decode(z_test)
 			#img_list.append(recon_test)
-			vutils.save_image(recon_test, os.path.join(opt.dirImageoutput, 'e_'+str(epoch)+'_intentest' + str(i) + '.jpg'))
+			vutils.save_image(recon_test, os.path.join(opt.dirImageoutput, '/interpolate/', 'e_'+str(epoch)+'_intentest' + str(i) + '.jpg'))
 
 
 
