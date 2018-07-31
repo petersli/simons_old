@@ -691,12 +691,12 @@ def test(epoch):
 		# test intensity interpolation
 
 		img_list = []
-        for i in range(11):
-            z_exp_test = torch.full(z_exp_dp2.size(), i / 10)
-            z_test = torch.cat((z_per_dp2.cuda(), z_exp_test.cuda()), dim=1)
-            recon_test = model.decode(z_test)
-            img_list.append(recon_test)
-
+		for i in range(11):
+			z_exp_test = torch.full(z_exp_dp2.size(), i / 10)
+			z_test = torch.cat((z_per_dp2.cuda(), z_exp_test.cuda()), dim=1)
+			recon_test = model.decode(z_test)
+			img_list.append(recon_test)
+		
 		vutils.save_image(img_list, opt.dirImageoutput, 'e_'+str(epoch)+'_test_inten_img2', nrow=2)
 
 	print('Test images saved')
