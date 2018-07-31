@@ -697,7 +697,7 @@ def test(epoch):
 			recon_test = model.decode(z_test)
 			print(recon_test.size())
 			#img_list.append(recon_test)
-			vutils.save_image(recon_test, os.path.join(opt.dirImageoutput, 'e_'+str(epoch)+'_intentest' + str(i)))
+			vutils.save_image(recon_test, os.path.join(opt.dirImageoutput, 'e_'+str(epoch)+'_intentest' + str(i) + '.jpg'))
 
 		# img_list = torch.stack(img_list, 0)
 		# images = img_list[0:11,:,:,:]
