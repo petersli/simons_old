@@ -696,10 +696,8 @@ def test(epoch):
             z_test = torch.cat((z_per_dp2.cuda(), z_exp_test.cuda()), dim=1)
             recon_test = model.decode(z_test)
             img_list.append(recon_test)
-
-        visualizeAsImages(img_list, opt.dirImageoutput,
-		filename='e_'+str(epoch)+'_test_inten_img2', n_sample = 11, nrow=2, normalize=False)
-		## do the for loop thing
+            
+		vutils.save_image(img_list, opt.dirImageoutput, 'e_'+str(epoch)+'_test_inten_img2', nrow=2, padding=2)
 
 	print('Test images saved')
 	print('====> Test set recon loss: {:.4f}\ttriplet loss:  {:.4f}'.format(recon_test_loss, triplet_test_loss))
