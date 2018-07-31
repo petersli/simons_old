@@ -361,36 +361,6 @@ def train(epoch):
  #   train_amount = train_amount + len(dataset)
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
 
-	#######
-
-	lossfile.write('PIE Epoch:{} Recon:{:.6f} Swap:{:.6f} ExpLoss:{:.6f}\n'.format(epoch, recon_pie_train_loss,
-		swap_train_loss, expression_train_loss))
-	lossfile.write('PIE Epoch:{} cosineSim:{:.6f} triplet:{:.6f}\n'.format(epoch, cosine_train_loss,
-		triplet_train_loss))
-	lossfile.write('MUG Epoch:{} Recon:{:.6f} triplet:{:.6f}\n'.format(epoch, recon_mug_train_loss,
-		triplet_train_loss))
-	lossfile.write('MUG Epoch:{} Recon:{:.6f} inten:{:.6f}\n'.format(epoch, recon_mug_train_loss,
-		inten_train_loss))
-
-	print('====> Epoch: {} Average recon loss: {:.6f} Average cosine loss: {:.6f} Average triplet: {:.6f} Average swap: {:.6f}'.format(
-		  epoch, recon_pie_train_loss, cosine_train_loss,
-		  triplet_train_loss, swap_train_loss))
-			#divide by (batch_size * num_batches) to get average loss for the epoch
-
-	#data
-	visualizeAsImages(dp0_img.data.clone(),
-		opt.dirImageoutput,
-		filename='e_'+str(epoch)+'_train_img0', n_sample = 18, nrow=5, normalize=False)
-
-	#reconstruction (dp0 only)
-	visualizeAsImages(recon_batch_dp0.data.clone(),
-		opt.dirImageoutput,
-		filename='e_'+str(epoch)+'_train_recon0', n_sample = 18, nrow=5, normalize=False)
-
-	print('Train data and reconstruction saved.')
-
-	#########
-
 	for batch_idx, data_point in enumerate(dataloader, 0):
 
 		gc.collect() # collect garbage
@@ -716,14 +686,13 @@ def load_last_model():
 def start_training():
 	# start_epoch, _ = load_last_model()
 	start_epoch = 0
-
+	test(epoch)
 
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
-		test(epoch)
 		recon_loss, triplet_loss = train(epoch)
 		torch.save(model.state_dict(),
 		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_cosine_{:.4f}.pth'.format(epoch, recon_loss, triplet_loss))
-		if epoch % 10 == 0 or epoch == 1:
+		if epoch % 10 == 0:
 			test(epoch)
 
 	lossfile.close()
