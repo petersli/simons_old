@@ -696,11 +696,12 @@ def test(epoch):
 			z_test = torch.cat((z_per_dp2.cuda(), z_exp_test.cuda()), dim=1)
 			recon_test = model.decode(z_test)
 			print(recon_test.size())
-			img_list.append(recon_test)
+			#img_list.append(recon_test)
+			vutils.save_image(recon_test, os.path.join(opt.dirImageoutput, 'e_'+str(epoch)+'_intentest' + str(i)))
 
-		img_list = torch.stack(img_list, 0)
-		images = img_list[0:11,:,:,:]
-		vutils.save_image(images, os.path.join(opt.dirImageoutput, 'e_'+str(epoch)+'_test_inten_img2'), nrow=2)
+		# img_list = torch.stack(img_list, 0)
+		# images = img_list[0:11,:,:,:]
+		# vutils.save_image(images, os.path.join(opt.dirImageoutput, 'e_'+str(epoch)+'_test_inten_img2'), nrow=2)
 
 	print('Test images saved')
 	print('====> Test set recon loss: {:.4f}\ttriplet loss:  {:.4f}'.format(recon_test_loss, triplet_test_loss))
