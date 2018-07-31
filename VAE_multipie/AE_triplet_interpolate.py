@@ -631,7 +631,7 @@ def last_model_to_cpu():
 	torch.save(model.state_dict(), opt.dirCheckpoints + '/cpu_'+last_cp.split('/')[-1])
 
 if __name__ == '__main__':
-	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
+	for epoch in range(1, opt.epoch_iter + 1):
 		if epoch % 10 == 0 or epoch == 1:
 			test(epoch)
 	# last_model_to_cpu()
