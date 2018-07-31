@@ -697,8 +697,7 @@ def test(epoch):
             recon_test = model.decode(z_test)
             img_list.append(recon_test)
 
-        visualizeAsImages(img_list.data.clone(),
-		opt.dirImageoutput,
+        visualizeAsImages(img_list, opt.dirImageoutput,
 		filename='e_'+str(epoch)+'_test_inten_img2', n_sample = 11, nrow=2, normalize=False)
 		## do the for loop thing
 
