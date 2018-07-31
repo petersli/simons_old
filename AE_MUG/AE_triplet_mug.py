@@ -697,7 +697,7 @@ def test(epoch):
 			recon_test = model.decode(z_test)
 			img_list.append(recon_test)
 		
-		vutils.save_image(img_list, opt.dirImageoutput, 'e_'+str(epoch)+'_test_inten_img2', nrow=2)
+		vutils.save_image(img_list, os.path.join(opt.dirImageoutput, 'e_'+str(epoch)+'_test_inten_img2'), nrow=2)
 
 	print('Test images saved')
 	print('====> Test set recon loss: {:.4f}\ttriplet loss:  {:.4f}'.format(recon_test_loss, triplet_test_loss))
