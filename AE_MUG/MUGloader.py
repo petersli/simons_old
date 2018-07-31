@@ -172,7 +172,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath0[-20:-4])
                 key = (ids, '01')
 
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img0 = img0.crop(coords) #crop
 
                 if resize:
@@ -185,7 +185,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath9[-20:-4])
                 key = (ids, '01')
 
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img9 = img9.crop(coords) #crop
 
                 if resize:
@@ -199,7 +199,7 @@ class FareMultipieExpressionTripletsFrontalTrainTestSplit(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath1[-20:-4])
                 key = (ids, '01')
 
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img1 = img1.crop(coords) #crop
 
                 if resize:
@@ -261,7 +261,7 @@ class TrainTestSplit(data.Dataset):
         resize = 64,
         transform=None, return_paths=False):
         self.opt = opt
-        self.persondir_list = self.make_persondir_list(mugroot)
+        persondir_list = self.make_persondir_list(mugroot)
         imgs, ids, ide, idp, idl = self.make_dataset_fare_multipie(pieroot)
 
 
@@ -272,7 +272,7 @@ class TrainTestSplit(data.Dataset):
         self.mugroot = mugroot
         self.doTesting = doTesting
         self.resize = resize
-        ## self.persondir_list = self.persondir_list
+        self.persondir_list = persondir_list
         self.transform = transform
         self.return_paths = return_paths
         self.mugloader = self.mugloader_expression_triplet
@@ -292,26 +292,30 @@ class TrainTestSplit(data.Dataset):
     	pieindex = index
     	mugindex = index
 
-        if self.doTesting:
-            while (not self.persondir_list[mugindex] in self.MugTestList):
-                mugindex = self.resample()
+        if mugindex in range(len(self.persondir_list)):
+            print (mugindex)
+            if self.doTesting:
+                while ((not self.persondir_list[mugindex] in self.MugTestList) or (not mugindex in range(len(self.persondir_list)))):
+                    mugindex = self.mugresample()
+            else:
+                while ((self.persondir_list[mugindex] in self.MugTestList) or (not mugindex in range(len(self.persondir_list)))):
+                    mugindex = self.mugresample()
         else:
-            while (self.persondir_list[mugindex] in self.MugTestList):
-                mugindex = self.resample()
+            mugindex = self.mugresample()
 
         if self.doTesting:
             while (not self.ids[pieindex] in self.PieTestList) or (not (self.idp[pieindex] == '051')):
-                pieindex = self.resample()
+                pieindex = self.pieresample()
         else:
             while (self.ids[pieindex] in self.PieTestList) or (not (self.idp[pieindex] == '051')):
-                pieindex = self.resample()
+                pieindex = self.pieresample()
 
         ##### PIE #####
-        imgPath0 = self.imgs[index]
+        imgPath0 = self.imgs[pieindex]
         # different lighting
-        coindex9 = self.getCoindex9(index)
+        coindex9 = self.getCoindex9(pieindex)
         # different person
-        coindex1 = self.getCoindex1(index)
+        coindex1 = self.getCoindex1(pieindex)
         imgPath9 = self.imgs[coindex9]
         imgPath1 = self.imgs[coindex1]
 
@@ -319,15 +323,22 @@ class TrainTestSplit(data.Dataset):
 
         ##### MUG #####
         intensities = range(11)
-        inten2 = random.sample(intensities, 1)
-        inten3 = random.sample(intensities, 1)
-        inten4 = random.sample(intensities, 1)
 
-        imgPath2 = dict_mug[self.persondir_list[index], inten0]
-        imgPath3 = dict_mug[self.persondir_list[index], inten9]
-        imgPath4 = dict_mug[self.persondir_list[index], inten1]
+        inten2 = random.sample(intensities, 1)[0]
+        #print('inten2 loader', inten2)
+        inten3 = random.sample(intensities, 1)[0]
+        inten4 = random.sample(intensities, 1)[0]
 
-        img2, img3, img4 = self.mugloader(imgPath2, imgPath3, imgPath4, person=self.persondir_list[index])
+        key1 = (self.persondir_list[mugindex], inten2)
+        key2 = (self.persondir_list[mugindex], inten3)
+        key3 = (self.persondir_list[mugindex], inten4)
+
+        #print (os.path.join('/home/peterli/simons/AE_MUG/', dict_mug[key1][25:]))
+        imgPath2 = os.path.join('/home/peterli/simons/AE_MUG/MUG_data/', dict_mug[key1][25:])
+        imgPath3 = os.path.join('/home/peterli/simons/AE_MUG/MUG_data/', dict_mug[key2][25:])
+        imgPath4 = os.path.join('/home/peterli/simons/AE_MUG/MUG_data/', dict_mug[key3][25:])
+
+        img2, img3, img4 = self.mugloader(imgPath2, imgPath3, imgPath4, person=self.persondir_list[mugindex])
 
         return img0, img9, img1, ide0, ide9, ide1, img2, img3, img4, inten2, inten3, inten4
 
@@ -338,11 +349,12 @@ class TrainTestSplit(data.Dataset):
         return len(self.imgs)
 
     def make_persondir_list(self, dirpath_root):
-        self.persondir_list = [] # list of path to images
+        persondir_list = [] # list of path to images
         for root, dirlist, filelist in sorted(os.walk(dirpath_root)):
             for persondir in dirlist:
-                self.persondir_list.append(persondir)
-        return self.persondir_list
+                print(persondir)
+                persondir_list.append(persondir)
+        return persondir_list
 
     def make_dataset_fare_multipie(self, dirpath_root):
         img_list = [] # list of path to images
@@ -420,7 +432,7 @@ class TrainTestSplit(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath0[-20:-4])
                 key = (ids, '01')
 
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img0 = img0.crop(coords) #crop
 
                 if resize:
@@ -433,7 +445,7 @@ class TrainTestSplit(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath9[-20:-4])
                 key = (ids, '01')
 
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img9 = img9.crop(coords) #crop
 
                 if resize:
@@ -447,7 +459,7 @@ class TrainTestSplit(data.Dataset):
                 ids, ide, idp, idl = self.parse_imgfilename_fare_multipie(imgPath1[-20:-4])
                 key = (ids, '01')
 
-                coords = dict[key]
+                coords = cropdict_pie[key]
                 img1 = img1.crop(coords) #crop
 
                 if resize:
@@ -473,6 +485,34 @@ class TrainTestSplit(data.Dataset):
     #         return False
 
 
-    def resample(self):
+    def getCoindex9(self, index):
+        # same ids, different ide, same idl, same idt, same idp
+        s = duplicates(self.ids, self.ids[index], match = True)
+        e = duplicates(self.ide, self.ide[index], match = False)
+        l = duplicates(self.idl, self.idl[index], match = True)
+        p = duplicates(self.idp, self.idp[index], match = True)
+        ava = intersect(s,e,l,p)
+        if len(ava)>0:
+            return random.sample(ava, 1)[0]
+        else:
+            return index
+
+    def getCoindex1(self, index):
+        # different ids, same ide, same idl, same idt, same idp
+        s = duplicates(self.ids, self.ids[index], match = False)
+        e = duplicates(self.ide, self.ide[index], match = True)
+        l = duplicates(self.idl, self.idl[index], match = True)
+        p = duplicates(self.idp, self.idp[index], match = True)
+        ava = intersect(s,e,l,p)
+        if len(ava)>0:
+            return random.sample(ava, 1)[0]
+        else:
+            return index
+
+
+    def mugresample(self):
         index = np.random.randint(len(self.persondir_list), size=1)[0]
+        return index
+    def pieresample(self):
+        index = np.random.randint(len(self.imgs), size=1)[0]
         return index

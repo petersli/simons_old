@@ -290,8 +290,8 @@ class AE(nn.Module):
 
 	def get_latent_vectors(self, x):
 		z = self.encode(x) # whole latent vector
-		z_per = z[:,0:80].contiguous() # part of z repesenenting identity of the person
-		z_exp = z[:,80:128].contiguous()  # part of z representing the expression
+		z_per = z[:,0:64].contiguous() # part of z repesenenting identity of the person
+		z_exp = z[:,64:128].contiguous()  # part of z representing the expression
 		return z, z_per, z_exp
 
 	def forward(self, x):
@@ -351,6 +351,7 @@ def train(epoch):
 	triplet_train_loss = 0
 	swap_train_loss = 0
 	expression_train_loss = 0
+	inten_train_loss = 0
 	pie_dataroot = random.sample(MultipieData,1)[0]
 	# mug_dataroot = random.sample(MugData,1)[0]  # why is it without replacement?
 
@@ -359,6 +360,36 @@ def train(epoch):
 	print('# size of the current (sub)dataset is %d' %len(dataset))
  #   train_amount = train_amount + len(dataset)
 	dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize, shuffle=True, num_workers=int(opt.workers))
+
+	#######
+
+	lossfile.write('PIE Epoch:{} Recon:{:.6f} Swap:{:.6f} ExpLoss:{:.6f}\n'.format(epoch, recon_pie_train_loss,
+		swap_train_loss, expression_train_loss))
+	lossfile.write('PIE Epoch:{} cosineSim:{:.6f} triplet:{:.6f}\n'.format(epoch, cosine_train_loss,
+		triplet_train_loss))
+	lossfile.write('MUG Epoch:{} Recon:{:.6f} triplet:{:.6f}\n'.format(epoch, recon_mug_train_loss,
+		triplet_train_loss))
+	lossfile.write('MUG Epoch:{} Recon:{:.6f} inten:{:.6f}\n'.format(epoch, recon_mug_train_loss,
+		inten_train_loss))
+
+	print('====> Epoch: {} Average recon loss: {:.6f} Average cosine loss: {:.6f} Average triplet: {:.6f} Average swap: {:.6f}'.format(
+		  epoch, recon_pie_train_loss, cosine_train_loss,
+		  triplet_train_loss, swap_train_loss))
+			#divide by (batch_size * num_batches) to get average loss for the epoch
+
+	#data
+	visualizeAsImages(dp0_img.data.clone(),
+		opt.dirImageoutput,
+		filename='e_'+str(epoch)+'_train_img0', n_sample = 18, nrow=5, normalize=False)
+
+	#reconstruction (dp0 only)
+	visualizeAsImages(recon_batch_dp0.data.clone(),
+		opt.dirImageoutput,
+		filename='e_'+str(epoch)+'_train_recon0', n_sample = 18, nrow=5, normalize=False)
+
+	print('Train data and reconstruction saved.')
+
+	#########
 
 	for batch_idx, data_point in enumerate(dataloader, 0):
 
@@ -489,13 +520,22 @@ def train(epoch):
 
 		recon_mug_loss = recon_loss_func(recon_batch_dp2, dp2_img)
 
+		z_dp3, z_per_dp3, z_exp_dp3 = model.get_latent_vectors(dp3_img)
+		z_dp4, z_per_dp4, z_exp_dp4 = model.get_latent_vectors(dp4_img)
+
+		recon_batch_dp2, z_dp2, z_per_dp2, z_exp_dp2 = model(dp2_img)
+
+
+		recon_mug_loss = recon_loss_func(recon_batch_dp2, dp2_img)
+
 		recon_mug_loss.backward(retain_graph=True)
 		recon_mug_train_loss += recon_mug_loss.data[0].item()
 
 
 		### intensity ###
 
-		target = torch.full(z_exp_dp2.size(), inten2)
+		print('inten2', inten2)
+		target = torch.full(z_exp_dp2[0].size(), float(inten2[0]) / 10.0).cuda()
 		inten_loss = L1(z_exp_dp2, target)
 		inten_loss.backward()
 		inten_train_loss += inten_loss.data[0].item()
@@ -505,7 +545,7 @@ def train(epoch):
 		print('PIE Train Epoch: {} [{}/{} ({:.0f}%)] Recon: {:.6f} Cosine: {:.6f} Triplet: {:.6f} Swap: {:.6f}'.format(
 			epoch, batch_idx * opt.batchSize, (len(dataloader) * opt.batchSize),
 			100. * batch_idx / len(dataloader),
-			recon_loss.data[0].item(), sim_loss.data[0].item(), triplet_loss.data[0].item(), swap_loss.data[0].item()))
+			recon_mug_loss.data[0].item(), sim_loss.data[0].item(), triplet_loss.data[0].item(), swap_loss.data[0].item()))
 		print('MUG: recon: {:.6f} inten: {:.6f}'.format(recon_mug_loss.data[0].item(), inten_loss.data[0].item()))
 			#loss is calculated for each img, so divide by batch size to get loss for the batch
 
@@ -513,11 +553,13 @@ def train(epoch):
 		swap_train_loss, expression_train_loss))
 	lossfile.write('PIE Epoch:{} cosineSim:{:.6f} triplet:{:.6f}\n'.format(epoch, cosine_train_loss,
 		triplet_train_loss))
+	lossfile.write('MUG Epoch:{} Recon:{:.6f} triplet:{:.6f}\n'.format(epoch, recon_mug_train_loss,
+		triplet_train_loss))
 	lossfile.write('MUG Epoch:{} Recon:{:.6f} inten:{:.6f}\n'.format(epoch, recon_mug_train_loss,
 		inten_train_loss))
 
 	print('====> Epoch: {} Average recon loss: {:.6f} Average cosine loss: {:.6f} Average triplet: {:.6f} Average swap: {:.6f}'.format(
-		  epoch, recon_train_loss, cosine_train_loss,
+		  epoch, recon_pie_train_loss, cosine_train_loss,
 		  triplet_train_loss, swap_train_loss))
 			#divide by (batch_size * num_batches) to get average loss for the epoch
 
@@ -534,7 +576,7 @@ def train(epoch):
 	print('Train data and reconstruction saved.')
 
 
-	return recon_train_loss / (len(dataloader) * opt.batchSize), triplet_train_loss / (len(dataloader) * opt.batchSize)
+	return recon_pie_train_loss / (len(dataloader) * opt.batchSize), triplet_train_loss / (len(dataloader) * opt.batchSize)
 
 
 def test(epoch):
@@ -651,13 +693,14 @@ def test(epoch):
 		img_list = []
         for i in range(11):
             z_exp_test = torch.full(z_exp_dp2.size(), i / 10)
-            z_test = torch.cat((z_per_dp2, z_exp_test))
+            z_test = torch.cat((z_per_dp2.cuda(), z_exp_test.cuda()))
             recon_test = model.decode(z_test)
             img_list[i] = recon_test
 
         visualizeAsImages(img_list.data.clone(),
 		opt.dirImageoutput,
 		filename='e_'+str(epoch)+'_test_inten_img2', n_sample = 11, nrow=2, normalize=False)
+		## do the for loop thing
 
 	print('Test images saved')
 	print('====> Test set recon loss: {:.4f}\ttriplet loss:  {:.4f}'.format(recon_test_loss, triplet_test_loss))
@@ -676,6 +719,7 @@ def start_training():
 
 
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
+		test(epoch)
 		recon_loss, triplet_loss = train(epoch)
 		torch.save(model.state_dict(),
 		 opt.dirCheckpoints + '/Epoch_{}_Recon_{:.4f}_cosine_{:.4f}.pth'.format(epoch, recon_loss, triplet_loss))
