@@ -686,7 +686,7 @@ def load_last_model():
 def start_training():
 	# start_epoch, _ = load_last_model()
 	start_epoch = 0
-	test(epoch)
+	test(start_epoch)
 
 	for epoch in range(start_epoch + 1, start_epoch + opt.epoch_iter + 1):
 		recon_loss, triplet_loss = train(epoch)
