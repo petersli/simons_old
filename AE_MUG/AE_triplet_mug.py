@@ -504,8 +504,9 @@ def train(epoch):
 
 		### intensity ###
 
-		print('inten2', inten2)
+		
 		target = torch.full(z_exp_dp2[0].size(), float(inten2[0]) / 10.0).cuda()
+		print(target)
 		inten_loss = L1(z_exp_dp2, target)
 		inten_loss.backward()
 		inten_train_loss += inten_loss.data[0].item()
